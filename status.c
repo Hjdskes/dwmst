@@ -12,7 +12,7 @@
 #define INTERVAL	1
 
 // Files read for system info:
-#define AUD_FILE		"/home/jmcclure/.status_info"
+//#define AUD_FILE		"/home/jmcclure/.status_info"
 #define BATT_NOW		"/sys/class/power_supply/BAT1/charge_now"
 #define BATT_FULL		"/sys/class/power_supply/BAT1/charge_full"
 #define BATT_STAT		"/sys/class/power_supply/BAT1/status"
@@ -20,8 +20,8 @@
 //  Defaults make extensive use of escape characters for colors which require
 //  colorstatus patch.  There are also "extended" characters selected to work
 //  with terminus2 font for symbols and trianlge "flags".
-#define VOL_STR			"Ü	 Ô %d% Ü"				// volume when not muted  IMPORTANT! SEE NOTE IN README FOR AUDO INFO
-#define VOL_MUTE_STR	"Ü	 Ô × Ü"					// volume when muted
+//#define VOL_STR			"Ü	 Ô %d% Ü"				// volume when not muted  IMPORTANT! SEE NOTE IN README FOR AUDO INFO
+//#define VOL_MUTE_STR	"Ü	 Ô × Ü"					// volume when muted
 #define BAT_STR			"Ü	 %d%% Ü"				// Battery, unplugged, above BATT_LOW%
 #define BAT_LOW_STR		"Ü %d%% Ü"					// Battery, unplugged, below BATT_LOW% remaining
 #define BAT_CHRG_STR	"Ü %d%% Ü"					// Battery, when charging (plugged into AC)
@@ -34,6 +34,7 @@ int main() {
 	long lnum1,lnum2,lnum3,lnum4;
 	char statnext[30], status[100];
 	time_t current;
+	FILE *infile;
 	// Setup X display and root window id:
 	dpy=XOpenDisplay(NULL);
 	if ( dpy == NULL) {
