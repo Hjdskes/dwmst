@@ -1,27 +1,25 @@
-	#include <mpd/client.h>
-//#include <mpd/status.h>
-//#include <mpd/entity.h>
-//#include <mpd/search.h>
-//#include <mpd/tag.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+//#include <mpd/client.h>
 #include <X11/Xlib.h>
 #include <iwlib.h>
 
-#define WIFI		"wlan0"	// Wireless interface
-#define BATT_LOW	11		// Below BATT_LOW percentage left on battery, the battery display turns red
-#define INTERVAL	1		// Sleeps for INTERVAL seconds between updates
+//#define MPD_HOST	"localhost"	// MPD Host
+//#define MPD_PORT	6600		// MPD Port
+#define WIFI		"wlan0"		// Wireless interface
+#define BATT_LOW	11			// Below BATT_LOW percentage left on battery, the battery display turns red
+#define INTERVAL	1			// Sleeps for INTERVAL seconds between updates
 // Files read for system info:
 #define AUD_FILE		"/home/jente/.audio_volume"
 #define BATT_NOW		"/sys/class/power_supply/BAT0/charge_now"
 #define BATT_FULL		"/sys/class/power_supply/BAT0/charge_full"
 #define BATT_STAT		"/sys/class/power_supply/BAT0/status"
-// Display format strings:
-// Defaults make extensive use of escape characters for colors which require colorstatus patch.
-	#define MPD_STR			"<b>%s</b>- <i>%s</i> \x02•\x01 "	// MPD
+// Display format strings. Defaults make extensive use of escape characters for colors which require colorstatus patch.
+//#define MPD_STR			"%s \x02-\x01 %s \x02•\x01 "			// MPD
+//#define MPD_NP_STR		" "										// MPD, not playing
 #define WIFI_STR		"%s %d%% "								// WIFI
 #define NO_WIFI_STR		"Geen verbinding "						// WIFI, no connection
 #define VOL_STR			"\x02•\x01 %d%% "						// Volume
@@ -32,18 +30,14 @@
 #define BAT_CHRG_STR	"\x02•\x01 C %d%% "						// Battery, AC
 #define DATE_TIME_STR	"\x02•\x01 %a %b %d\x02,\x01 %H:%M "	// This is a strftime format string which is passed localtime
 
-int main() {
+int main(int argc, char ** argv) {
 	Display *dpy;
 	Window root;
 	int num;
-	unsigned int i = 0;
-	int have_song = 0;
+	int loops=60;
 	long lnum1,lnum2;
 	char statnext[30], status[100];
-	/*const struct mpd_song *song;
-	const char *artist; 
-	const char *title;
-	struct mpd_connection *conn;*/
+	char wifiString[30];
 	int skfd, has_bitrate = 0;
 	struct wireless_info *winfo;
 	winfo = (struct wireless_info *) malloc(sizeof(struct wireless_info));
@@ -61,39 +55,32 @@ int main() {
 	for (;;) {
 		status[0]='\0';
 	// MPD
-		/*while ((song = mpd_recv_song(conn)) != NULL ) {
-			have_song = 1;
-			artist = mpd_song_get_tag(song,MPD_TAG_ARTIST,i++);
-			i = 0;
-			title = mpd_song_get_tag(song,MPD_TAG_TITLE,i++);
-		};
-		mpd_connection_free(conn);
-		if (have_song == 1) {
-		sprintf(statnext, MPD_STR, title, artist);
-		};
-		strcat(status,statnext);*/
+		/* removed for now, settling the other stuff first */
 	// WIFI
-		skfd = iw_sockets_open();
-		if (iw_get_basic_config(skfd, WIFI, &(winfo->b)) > -1) {
-			if (iw_get_stats(skfd, WIFI, &(winfo->stats), // set present winfo variables
-				&winfo->range, winfo->has_range) >= 0) {
-				winfo->has_stats = 1;
-			}
-			if (iw_get_range_info(skfd, WIFI, &(winfo->range)) >= 0) { // set present winfo variables
-				winfo->has_range = 1;
-			}
-			if (winfo->b.has_essid) {
-				if (winfo->b.essid_on) {
-					sprintf(statnext,WIFI_STR,winfo->b.essid,(winfo->stats.qual.qual*100)/winfo->range.max_qual.qual);
-				} else {
-					sprintf(statnext,NO_WIFI_STR);
+		if (++loops > 60) {
+			loops=0;
+			skfd = iw_sockets_open();
+			if (iw_get_basic_config(skfd, WIFI, &(winfo->b)) > -1) {
+				if (iw_get_stats(skfd, WIFI, &(winfo->stats), // set present winfo variables
+					&winfo->range, winfo->has_range) >= 0) {
+					winfo->has_stats = 1;
+				}
+				if (iw_get_range_info(skfd, WIFI, &(winfo->range)) >= 0) { // set present winfo variables
+					winfo->has_range = 1;
+				}
+				if (winfo->b.has_essid) {
+					if (winfo->b.essid_on) {
+						sprintf(wifiString,WIFI_STR,winfo->b.essid,(winfo->stats.qual.qual*100)/winfo->range.max_qual.qual);
+					} else {
+						sprintf(wifiString,NO_WIFI_STR);
+					}
 				}
 			}
+			iw_sockets_close(skfd);
+			fflush(stdout);
+			memset(winfo, 0, sizeof(struct wireless_info));
 		}
-		iw_sockets_close(skfd);
-		fflush(stdout);
-		memset(winfo, 0, sizeof(struct wireless_info));
-		strcat(status,statnext);
+		strcat(status,wifiString);
 	// Audio volume
 		infile = fopen(AUD_FILE,"r");
 		fscanf(infile,"%d",&num);
@@ -118,7 +105,7 @@ int main() {
 				sprintf(statnext,BAT_FULL_STR,num);
 		}
 		else {
-			if (num < BATT_LOW)
+			if (num <  BATT_LOW)
 				sprintf(statnext,BAT_LOW_STR,num);
 			else
 				sprintf(statnext,BAT_STR,num);
