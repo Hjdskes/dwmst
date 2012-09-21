@@ -1,5 +1,5 @@
-dwmStatus: status.c
-	gcc -g -o dwmStatus status.c -lX11 -liw `pkg-config --libs libmpdclient`
+status: status.c
+	gcc -g -o status status.c `pkg-config --cflags --libs x11 libmpdclient` -liw
 
 clean:
-	rm dwmStatus
+	rm status

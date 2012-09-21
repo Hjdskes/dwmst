@@ -3,42 +3,42 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
-//#include <mpd/client.h>
+#include <mpd/client.h>
 #include <X11/Xlib.h>
 #include <iwlib.h>
 
-//#define MPD_HOST	"localhost"	// MPD Host
-//#define MPD_PORT	6600		// MPD Port
-#define WIFI		"wlan0"		// Wireless interface
-#define BATT_LOW	11			// Below BATT_LOW percentage left on battery, the battery display turns red
-#define INTERVAL	1			// Sleeps for INTERVAL seconds between updates
+#define WIFI			"wlan0"		// Wireless interface
+#define BATT_LOW		11			// Below BATT_LOW percentage left on battery, the battery display turns red
+#define INTERVAL		1			// Sleeps for INTERVAL seconds between updates
 // Files read for system info:
 #define AUD_FILE		"/home/jente/.audio_volume"
 #define BATT_NOW		"/sys/class/power_supply/BAT0/charge_now"
 #define BATT_FULL		"/sys/class/power_supply/BAT0/charge_full"
 #define BATT_STAT		"/sys/class/power_supply/BAT0/status"
 // Display format strings. Defaults make extensive use of escape characters for colors which require colorstatus patch.
-//#define MPD_STR			"%s \x02-\x01 %s \x02•\x01 "			// MPD
-//#define MPD_NP_STR		" "										// MPD, not playing
-#define WIFI_STR		"%s %d%% "								// WIFI
-#define NO_WIFI_STR		"Geen verbinding "						// WIFI, no connection
-#define VOL_STR			"\x02•\x01 %d%% "						// Volume
-#define VOL_MUTE_STR	"\x02•\x01       ×      "				// Volume, muted
-#define BAT_STR			"\x02•\x01 D %d%% "						// Battery, BAT, above BATT_LOW percentage
-#define BAT_FULL_STR	"\x02•\x04 F \x01%d%% "					// Battery, full
-#define BAT_LOW_STR		"\x02•\x03 D %d%% "						// Battery, BAT, below BATT_LOW percentage
-#define BAT_CHRG_STR	"\x02•\x01 C %d%% "						// Battery, AC
-#define DATE_TIME_STR	"\x02•\x01 %a %b %d\x02,\x01 %H:%M "	// This is a strftime format string which is passed localtime
+#define MPD_STR			"%s \x02-\x01 %s \x02•\x01 "					// MPD, playing
+#define MPD_P_STR		"Paused\x02:\x01 %s \x02-\x01 %s \x02•\x01 "	// MPD, paused
+#define MPD_S_STR		" "												// MPD, stopped
+#define NO_MPD_STR		"Can't connect \x02•\x01 "						// MPD, can't connect
+#define WIFI_STR		"%s %d%% "										// WIFI
+#define NO_WIFI_STR		"Geen verbinding "								// WIFI, no connection
+#define VOL_STR			"\x02•\x01 %d%% "								// Volume
+#define VOL_MUTE_STR	"\x02•\x01       ×      "						// Volume, muted
+#define BAT_STR			"\x02•\x01 D %d%% "								// Battery, BAT, above BATT_LOW percentage
+#define BAT_LOW_STR		"\x02•\x03 D %d%% "								// Battery, BAT, below BATT_LOW percentage
+#define BAT_FULL_STR	"\x02•\x04 F \x01%d%% "							// Battery, full
+#define BAT_CHRG_STR	"\x02•\x01 C %d%% "								// Battery, AC
+#define DATE_TIME_STR	"\x02•\x01 %a %b %d\x02,\x01 %H:%M "			// This is a strftime format string which is passed localtime
 
-int main(int argc, char ** argv) {
+int main() {
 	Display *dpy;
 	Window root;
-	int num;
-	int loops=60;
+	int num, skfd, has_bitrate=0, loops=60;
 	long lnum1,lnum2;
-	char statnext[30], status[100];
-	char wifiString[30];
-	int skfd, has_bitrate = 0;
+	char statnext[30], status[100], wifiString[30];
+	struct mpd_song * song = NULL;
+	char * title = NULL;
+	char * artist = NULL;
 	struct wireless_info *winfo;
 	winfo = (struct wireless_info *) malloc(sizeof(struct wireless_info));
 	memset(winfo, 0, sizeof(struct wireless_info));
@@ -55,7 +55,38 @@ int main(int argc, char ** argv) {
 	for (;;) {
 		status[0]='\0';
 	// MPD
-		/* removed for now, settling the other stuff first */
+		struct mpd_connection * conn = mpd_connection_new(NULL, 0, 30000);
+			mpd_command_list_begin(conn, true);
+			mpd_send_status(conn);
+			mpd_send_current_song(conn);
+			mpd_command_list_end(conn);
+
+			struct mpd_status* theStatus = mpd_recv_status(conn);
+				if (!theStatus)
+					sprintf(statnext,NO_MPD_STR);
+				else
+					if (mpd_status_get_state(theStatus) == MPD_STATE_PLAY) {
+						mpd_response_next(conn);
+						song = mpd_recv_song(conn);
+						title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
+						artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
+						sprintf(statnext,MPD_STR,title,artist);
+						mpd_song_free(song);
+					}
+					else if (mpd_status_get_state(theStatus) == MPD_STATE_PAUSE) {
+						mpd_response_next(conn);
+						song = mpd_recv_song(conn);
+						title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
+						artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
+						sprintf(statnext,MPD_P_STR,title,artist);
+						mpd_song_free(song);
+					}
+					else if (mpd_status_get_state(theStatus) == MPD_STATE_STOP) {
+						sprintf(statnext,MPD_S_STR);
+					}
+			mpd_response_finish(conn);
+			mpd_connection_free(conn);
+			strcat(status,statnext);
 	// WIFI
 		if (++loops > 60) {
 			loops=0;
