@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <locale.h>
 #include <mpd/client.h>
 #include <X11/Xlib.h>
 #include <iwlib.h>
@@ -28,7 +29,7 @@
 #define BAT_LOW_STR		"\x02•\x03 D %d%% "								// Battery, BAT, below BATT_LOW percentage
 #define BAT_FULL_STR	"\x02•\x04 F \x01%d%% "							// Battery, full
 #define BAT_CHRG_STR	"\x02•\x01 C %d%% "								// Battery, AC
-#define DATE_TIME_STR	"\x02•\x01 %a %b %d\x02,\x01 %H:%M "			// This is a strftime format string which is passed localtime
+#define DATE_TIME_STR	"\x02•\x01 %a %d %b\x02,\x01 %H:%M "			// This is a strftime format string which is passed localtime
 
 int main() {
 	Display *dpy;
@@ -51,6 +52,7 @@ int main() {
 		exit(1);
 	}
 	root = XRootWindow(dpy,DefaultScreen(dpy));
+	setlocale(LC_ALL, "");
 // MAIN LOOP STARTS HERE
 	for (;;) {
 		status[0]='\0';
