@@ -21,15 +21,15 @@
 #define MPD_P_STR		"Paused\x02:\x01 %s \x02-\x01 %s \x02•\x01    "	// MPD, paused
 #define MPD_S_STR		" "												// MPD, stopped
 #define NO_MPD_STR		"Geen verbinding \x02•\x01    "					// MPD, can't connect
-#define WIFI_STR		"   %s %d%%    "										// WIFI
-#define NO_WIFI_STR		"   Geen verbinding    "								// WIFI, no connection
-#define VOL_STR			"\x02•\x01    %d%%    "								// Volume
-#define VOL_MUTE_STR	"\x02•\x01        ×        "							// Volume, muted
-#define BAT_STR			"\x02•\x01    D %d%%    "								// Battery, BAT, above BATT_LOW percentage
-#define BAT_LOW_STR		"\x02•\x03    D %d%%    "								// Battery, BAT, below BATT_LOW percentage
-#define BAT_FULL_STR	"\x02•\x04    F \x01%d%%    "							// Battery, full
-#define BAT_CHRG_STR	"\x02•\x01    C %d%%    "								// Battery, AC
-#define DATE_TIME_STR	"\x02•\x01    %a %d %b\x02,\x01 %H:%M "			// This is a strftime format string which is passed localtime
+#define WIFI_STR		"   %s %d%%    "								// WIFI
+#define NO_WIFI_STR		"   Geen verbinding    "						// WIFI, no connection
+#define VOL_STR			"\x02•\x01    %d%%    "							// Volume
+#define VOL_MUTE_STR	"\x02•\x01        ×        "					// Volume, muted
+#define BAT_STR			"\x02•\x01    D %d%%    "						// Battery, BAT, above BATT_LOW percentage
+#define BAT_LOW_STR		"\x02•\x03    D %d%%    "						// Battery, BAT, below BATT_LOW percentage
+#define BAT_FULL_STR	"\x02•\x04    F \x01%d%%    "					// Battery, full
+#define BAT_CHRG_STR	"\x02•\x01    C %d%%    "						// Battery, AC
+#define DATE_TIME_STR	"\x02•\x01    %a %d %b\x02,\x01 %H:%M   "		// This is a strftime format string which is passed localtime
 
 int main() {
 	Display *dpy;
