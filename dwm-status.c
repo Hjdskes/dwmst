@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <locale.h>
+#include <alsa/asoundlib.h>
 #include <mpd/client.h>
 #include <X11/Xlib.h>
 #include <iwlib.h>
@@ -11,16 +12,16 @@
 #define WIFI			"wlan0"		// Wireless interface
 #define BATT_LOW		11			// Below BATT_LOW percentage left on battery, the battery display turns red
 #define INTERVAL		1			// Sleeps for INTERVAL seconds between updates
+#define VOL_CH			"Master"	// Channel to watch for volume
 // Files read for system info:
-#define AUD_FILE		"/home/jente/.audio_volume"
 #define BATT_NOW		"/sys/class/power_supply/BAT0/charge_now"
 #define BATT_FULL		"/sys/class/power_supply/BAT0/charge_full"
 #define BATT_STAT		"/sys/class/power_supply/BAT0/status"
 // Display format strings. Defaults make extensive use of escape characters for colors which require colorstatus patch.
-#define MPD_STR			"%s \x02-\x01 %s \x02•\x01   "					// MPD, playing
-#define MPD_P_STR		"Paused\x02:\x01 %s \x02-\x01 %s \x02•\x01   "	// MPD, paused
+#define MPD_STR			"%s \x02-\x01 %s    \x02•\x01   "					// MPD, playing
+#define MPD_P_STR		"Paused\x02:\x01 %s \x02-\x01 %s    \x02•\x01   "	// MPD, paused
 #define MPD_S_STR		" "												// MPD, stopped
-#define NO_MPD_STR		"Geen verbinding \x02•\x01   "					// MPD, can't connect
+#define NO_MPD_STR		"Geen verbinding    \x02•\x01   "				// MPD, can't connect
 #define WIFI_STR		"  %s %d%%   "									// WIFI
 #define NO_WIFI_STR		"  Geen verbinding   "							// WIFI, no connection
 #define VOL_STR			"\x02•\x01   %d%%   "							// Volume
@@ -43,6 +44,8 @@ int main() {
 	struct wireless_info *winfo;
 	winfo = (struct wireless_info *) malloc(sizeof(struct wireless_info));
 	memset(winfo, 0, sizeof(struct wireless_info));
+	long vol = 0, max = 0, min = 0;
+	int mute = 0;
 	time_t current;
 	FILE *infile;
 	// Setup X display and root window id:
@@ -58,6 +61,9 @@ int main() {
 		status[0]='\0';
 	// MPD
 		struct mpd_connection * conn = mpd_connection_new(NULL, 0, 30000);
+		if (mpd_connection_get_error(conn))
+			sprintf(statnext,NO_MPD_STR);
+
 			mpd_command_list_begin(conn, true);
 			mpd_send_status(conn);
 			mpd_send_current_song(conn);
@@ -115,13 +121,34 @@ int main() {
 		}
 		strcat(status,wifiString);
 	// Audio volume
-		infile = fopen(AUD_FILE,"r");
-		fscanf(infile,"%d",&num);
-		fclose(infile);
-		if (num == -1)
-			sprintf(statnext,VOL_MUTE_STR,num);
+		snd_mixer_t *handle; // init alsa
+		snd_mixer_open(&handle, 0);
+		snd_mixer_attach(handle, "default");
+		snd_mixer_selem_register(handle, NULL, NULL);
+		snd_mixer_load(handle);
+		snd_mixer_selem_id_t *vol_info; // init channel with volume info
+		snd_mixer_selem_id_malloc(&vol_info);
+		snd_mixer_selem_id_set_name(vol_info, VOL_CH);
+		snd_mixer_elem_t* pcm_mixer = snd_mixer_find_selem(handle, vol_info);
+		snd_mixer_selem_get_playback_volume_range(pcm_mixer, &min, &max); // get volume
+		snd_mixer_selem_get_playback_volume(pcm_mixer, SND_MIXER_SCHN_MONO, &vol);
+		snd_mixer_selem_id_t *mute_info; // init channel with mute info
+		snd_mixer_selem_id_malloc(&mute_info);
+		snd_mixer_selem_id_set_name(mute_info, VOL_CH);
+		snd_mixer_elem_t* mas_mixer = snd_mixer_find_selem(handle, mute_info);
+		snd_mixer_selem_get_playback_switch(mas_mixer, SND_MIXER_SCHN_MONO, &mute); // get mute state
+
+		if(mute == 0)
+			sprintf(statnext, VOL_MUTE_STR);
 		else
-			sprintf(statnext,VOL_STR,num);
+			sprintf(statnext, VOL_STR, !!mute * (vol*100)/max);
+
+		if(vol_info)
+			snd_mixer_selem_id_free(vol_info);
+		if (mute_info)
+			snd_mixer_selem_id_free(mute_info);
+		if (handle)
+			snd_mixer_close(handle);
 		strcat(status,statnext);
 	// Power / Battery
 		infile = fopen(BATT_NOW,"r");
