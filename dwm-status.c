@@ -22,7 +22,7 @@
 #define MPD_P_STR		"Paused\x02:\x01 %s \x02-\x01 %s   \x02•\x01   "	// MPD, paused
 #define MPD_S_STR		" "													// MPD, stopped
 #define NO_MPD_STR		"Geen verbinding    \x02•\x01   "					// MPD, can't connect
-#define WIFI_STR		"  %s %d%%   "										// WIFI
+#define WIFI_STR		" %s %d%%   "										// WIFI
 #define NO_WIFI_STR		"  Geen verbinding   "								// WIFI, no connection
 #define VOL_STR			"\x02•\x01   %d%%   "								// Volume
 #define VOL_MUTE_STR	"\x02•\x01       ×       "							// Volume, muted
