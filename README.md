@@ -10,4 +10,5 @@ Also note that from now on there's two versions: one that works with Audacious a
 
 ToDo:
 * Make a header file for cleanliness and practice;
-* Get make to recognise whether we want MPD or Audacious and have only one dwmst.c file.
+* Get make to recognise whether we want MPD or Audacious and have only one dwmst.c file;
+* Get another string for Audacious/MPD; we don't need polling every second.
