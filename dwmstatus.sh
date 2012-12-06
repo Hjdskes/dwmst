@@ -1,7 +1,7 @@
 #!/bin/sh
 
 case $1 in
-    pre) killall dwm-status ;;
-    post) dwm-status    ;;
+    pre) killall dwmst ;;
+    post) dwmst    ;;
 esac
 exit
