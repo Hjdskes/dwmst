@@ -1,4 +1,4 @@
-FORKED FROM TRILBY WHITE'S DWMSTATUS: https://github.com/TrilbyWhite/dwmStatus
+**Forked from TrilbyWhite's dwmStatus:** https://github.com/TrilbyWhite/dwmStatus
 
 This is a hardcoded statusbar for my system and, like Trilby's dwmStatus from which this is forked, it was not meant to be flexible.  Flexibility costs memory and processor time. This can, however, be used as a template for your own status bar app.
 
