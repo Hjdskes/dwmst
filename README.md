@@ -14,4 +14,3 @@ In order to succesfully compile this, you need to have the following dependencie
 
 ToDo:
 * Make a header file for cleanliness and practice;
-* Get another string for Audacious/MPD; we don't need polling every second.
