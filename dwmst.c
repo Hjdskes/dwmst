@@ -29,7 +29,7 @@
 #define MPD_STR         "%s \x02-\x01 %s   \x02•\x01   "                    // MPD, playing
 #define MPD_P_STR       "Paused\x02:\x01 %s \x02-\x01 %s   \x02•\x01   "    // MPD, paused
 #define MPD_S_STR       " "                                                 // MPD, stopped
-#define NO_MPD_STR      "Geen verbinding    \x02•\x01   "                   // MPD, can't connect
+#define NO_MPD_STR      "Geen verbinding   \x02•\x01   " 		            // MPD, can't connect
 #endif
 #ifdef AUD
 #define MUSIC_STR       "%s   \x02•\x01   "                         // Music, playing

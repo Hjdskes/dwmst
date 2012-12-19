@@ -7,7 +7,7 @@ MPDFLAG  =  -DMPD
 
 # AUDACIOUS, comment if you don't want it
 #AUDLIB	 =  -ldbus-glib-1 -lglib-2.0 -laudclient
-AUDLIB	 =	`pkg-config --cflags --libs glib-2.0 dbus-glib-1 audclient`
+AUDLIB	 =  `pkg-config --cflags --libs glib-2.0 dbus-glib-1 audclient`
 AUDFLAG  =  -DAUD
 
 LIBS     =  -liw -lasound -lX11 ${MPDLIB} ${AUDLIB}
