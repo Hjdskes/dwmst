@@ -26,16 +26,15 @@
 #define BATT_STAT		"/sys/class/power_supply/BAT0/status"
 // Display format strings. Defaults make extensive use of escape characters for colors which require colorstatus patch.
 #ifdef MPD
-#define MPD_STR         "%s \x02-\x01 %s   \x02•\x01   "                    // MPD, playing
-#define MPD_P_STR       "Paused\x02:\x01 %s \x02-\x01 %s   \x02•\x01   "    // MPD, paused
-#define MPD_S_STR       ""													// MPD, stopped
-#define NO_MPD_STR      "Geen verbinding   \x02•\x01   "					// MPD, can't connect
+#define MPD_STR			"%s \x02-\x01 %s   \x02•\x01   "                    // MPD, playing
+#define MPD_P_STR		"Paused\x02:\x01 %s \x02-\x01 %s   \x02•\x01   "    // MPD, paused
+#define MPD_S_STR		""													// MPD, stopped
+#define NO_MPD_STR		"Geen verbinding   \x02•\x01   "					// MPD, can't connect
 #endif
 #ifdef AUD
-#define MUSIC_STR       "%s   \x02•\x01   "                         // Music, playing
-#define MUSIC_P_STR     "Paused\x02:\x01 %s   \x02•\x01   "         // Music, paused
-#define MUSIC_S_STR     ""											// Music, stopped
-#define NO_MUSIC_STR    "Geen verbinding    \x02•\x01   "           // Music, can't connect
+#define MUSIC_STR		"%s   \x02•\x01   "                         // Music, playing
+#define MUSIC_P_STR		"Paused\x02:\x01 %s   \x02•\x01   "         // Music, paused
+#define MUSIC_S_STR		""											// Music, stopped
 #endif
 #define SKYPE_STR		"Skype   \x02•\x01   "						// Skype is running
 #define NO_SKYPE_STR	""											// Skype is not running
@@ -56,17 +55,17 @@ int main() {
 	long lnum1, lnum2;
 	char statnext[100], status[100], wifistring[30], skypestring[30], musicstring[100];
 #ifdef MPD
-    struct mpd_song * song = NULL;
-    const char * title = NULL;
-    const char * artist = NULL;
+	struct mpd_song * song = NULL;
+	const char * title = NULL;
+	const char * artist = NULL;
 #endif
 #ifdef AUD
-    gint playpos;
-    gchar *psong;
-    DBusGProxy *session = NULL;
-    DBusGConnection *connection = NULL;
-    session = 0;
-    psong = NULL;
+	gint playpos;
+	gchar *psong;
+	DBusGProxy *session = NULL;
+	DBusGConnection *connection = NULL;
+	session = 0;
+	psong = NULL;
 #endif
 	struct wireless_info *winfo;
 	winfo = (struct wireless_info *) malloc(sizeof(struct wireless_info));
@@ -94,64 +93,64 @@ int main() {
 		//	musicloops=0;
 #ifdef MPD
 			struct mpd_connection * conn = mpd_connection_new(NULL, 0, 30000);
-    	    if (mpd_connection_get_error(conn))
-        	    sprintf(statnext,NO_MPD_STR);
+			if (mpd_connection_get_error(conn))
+				sprintf(musicstring,NO_MPD_STR);
 
 			mpd_command_list_begin(conn, true);
-            mpd_send_status(conn);
-            mpd_send_current_song(conn);
-            mpd_command_list_end(conn);
+			mpd_send_status(conn);
+			mpd_send_current_song(conn);
+			mpd_command_list_end(conn);
 
 			struct mpd_status* theStatus = mpd_recv_status(conn);
-                if (!theStatus)
-                    sprintf(statnext,NO_MPD_STR);
-                else
-                    if (mpd_status_get_state(theStatus) == MPD_STATE_PLAY) {
-                        mpd_response_next(conn);
-                        song = mpd_recv_song(conn);
-                        title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
-                        artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
-                        sprintf(statnext,MPD_STR,title,artist);
-                        mpd_song_free(song);
-                    }
-                    else if (mpd_status_get_state(theStatus) == MPD_STATE_PAUSE) {
-                        mpd_response_next(conn);
+				if (!theStatus)
+					sprintf(musicstring,NO_MPD_STR);
+				else
+					if (mpd_status_get_state(theStatus) == MPD_STATE_PLAY) {
+						mpd_response_next(conn);
 						song = mpd_recv_song(conn);
-                        title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
-                        artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
-                        sprintf(statnext,MPD_P_STR,title,artist);
-                        mpd_song_free(song);
-                    }
-                    else if (mpd_status_get_state(theStatus) == MPD_STATE_STOP) {
-                        sprintf(statnext,MPD_S_STR);
-                    }
-            mpd_response_finish(conn);
-            mpd_connection_free(conn);
-			strcat(status,statnext);
+						title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
+						artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
+						sprintf(musicstring,MPD_STR,title,artist);
+						mpd_song_free(song);
+					}
+					else if (mpd_status_get_state(theStatus) == MPD_STATE_PAUSE) {
+						mpd_response_next(conn);
+						song = mpd_recv_song(conn);
+						title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
+						artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
+						sprintf(musicstring,MPD_P_STR,title,artist);
+						mpd_song_free(song);
+					}
+					else if (mpd_status_get_state(theStatus) == MPD_STATE_STOP) {
+						sprintf(musicstring,MPD_S_STR);
+					}
+			mpd_response_finish(conn);
+			mpd_connection_free(conn);
+			strcat(status,musicstring);
 #endif
 #ifdef AUD
-        	connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-        	session = dbus_g_proxy_new_for_name(connection, AUDACIOUS_DBUS_SERVICE, AUDACIOUS_DBUS_PATH, AUDACIOUS_DBUS_INTERFACE);
-        	playpos = audacious_remote_get_playlist_pos(session);
-        	psong = audacious_remote_get_playlist_title(session, playpos);
-        	if (psong) {
-	            if (audacious_remote_is_paused(session)) {
-    	            sprintf(statnext,MUSIC_P_STR,psong);
-        	        g_free(psong);
-            	    psong = NULL;
-	            } else if (audacious_remote_is_playing(session)) {
-    	            sprintf(statnext,MUSIC_STR,psong);
-        	        g_free(psong);
-            	    psong = NULL;
-	            } else {
-    	            sprintf(statnext,MUSIC_S_STR);
-        	    }
-	        } else {
-    	        sprintf(statnext,MUSIC_S_STR);
-        	}
-	        g_object_unref(session);
-    	    session = NULL;
-			strcat(status,statnext);
+			connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+			session = dbus_g_proxy_new_for_name(connection, AUDACIOUS_DBUS_SERVICE, AUDACIOUS_DBUS_PATH, AUDACIOUS_DBUS_INTERFACE);
+			playpos = audacious_remote_get_playlist_pos(session);
+			psong = audacious_remote_get_playlist_title(session, playpos);
+			if (psong) {
+				if (audacious_remote_is_paused(session)) {
+					sprintf(musicstring,MUSIC_P_STR,psong);
+					g_free(psong);
+					psong = NULL;
+				} else if (audacious_remote_is_playing(session)) {
+					sprintf(musicstring,MUSIC_STR,psong);
+					g_free(psong);
+					psong = NULL;
+				} else {
+					sprintf(musicstring,MUSIC_S_STR);
+				}
+			} else {
+				sprintf(musicstring,MUSIC_S_STR);
+			}
+			g_object_unref(session);
+			session = NULL;
+			strcat(status,musicstring);
 #endif
 		//}
 	// SKYPE
@@ -168,7 +167,7 @@ int main() {
 		strcat(status,skypestring);
 	// WIFI
 		if (++wifiloops > 60) {
-            wifiloops=0;
+			wifiloops=0;
 			skfd = iw_sockets_open();
 			if (iw_get_basic_config(skfd, WIFI, &(winfo->b)) > -1) {
 				if (iw_get_stats(skfd, WIFI, &(winfo->stats), // set present winfo variables
@@ -256,4 +255,3 @@ int main() {
 	XCloseDisplay(dpy);
 	return 0;
 }
-
