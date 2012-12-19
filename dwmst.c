@@ -5,6 +5,8 @@
 #include <time.h>
 #include <locale.h>
 #include <X11/Xlib.h>
+#include <iwlib.h>
+#include <alsa/asoundlib.h>
 #ifdef MPD
 #include <mpd/client.h>
 #endif
@@ -12,8 +14,6 @@
 #include <audacious/dbus.h>
 #include <audacious/audctrl.h>
 #endif
-#include <iwlib.h>
-#include <alsa/asoundlib.h>
 
 #define WIFI			"wlan0"		// Wireless interface
 #define BATT_LOW		11			// Below BATT_LOW percentage left on battery, the battery display turns red

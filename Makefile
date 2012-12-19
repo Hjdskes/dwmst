@@ -2,11 +2,10 @@ PROG     =  dwmst
 PREFIX   =  /usr/local
 
 # MPD, comment if you don't want it
-MPDLIB   =  -lmpdclient
-MPDFLAG  =  -DMPD
+#MPDLIB   =  -lmpdclient
+#MPDFLAG  =  -DMPD
 
 # AUDACIOUS, comment if you don't want it
-#AUDLIB	 =  -ldbus-glib-1 -lglib-2.0 -laudclient
 AUDLIB	 =  `pkg-config --cflags --libs glib-2.0 dbus-glib-1 audclient`
 AUDFLAG  =  -DAUD
 
@@ -21,3 +20,4 @@ $(PROG): $(PROG).c
 
 clean:
 	rm -f $(PROG)
+
