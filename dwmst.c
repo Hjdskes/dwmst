@@ -28,17 +28,17 @@
 #ifdef MPD
 #define MPD_STR         "%s \x02-\x01 %s   \x02•\x01   "                    // MPD, playing
 #define MPD_P_STR       "Paused\x02:\x01 %s \x02-\x01 %s   \x02•\x01   "    // MPD, paused
-#define MPD_S_STR       " "                                                 // MPD, stopped
+#define MPD_S_STR       ""													// MPD, stopped
 #define NO_MPD_STR      "Geen verbinding   \x02•\x01   "					// MPD, can't connect
 #endif
 #ifdef AUD
 #define MUSIC_STR       "%s   \x02•\x01   "                         // Music, playing
 #define MUSIC_P_STR     "Paused\x02:\x01 %s   \x02•\x01   "         // Music, paused
-#define MUSIC_S_STR     " "                                         // Music, stopped
+#define MUSIC_S_STR     ""											// Music, stopped
 #define NO_MUSIC_STR    "Geen verbinding    \x02•\x01   "           // Music, can't connect
 #endif
 #define SKYPE_STR		"Skype   \x02•\x01   "						// Skype is running
-#define NO_SKYPE_STR	" "											// Skype is not running
+#define NO_SKYPE_STR	""											// Skype is not running
 #define WIFI_STR		" %s %d%%   "								// WIFI
 #define NO_WIFI_STR		"  Geen verbinding   "						// WIFI, no connection
 #define VOL_STR			"\x02•\x01   %d%%   "						// Volume
