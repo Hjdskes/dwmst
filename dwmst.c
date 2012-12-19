@@ -53,7 +53,7 @@ int main() {
 	Window root;
 	int num, skfd, wifiloops=60, skypeloops=20, musicloops=10;
 	long lnum1, lnum2;
-	char statnext[100], status[100], wifistring[30], skypestring[30], musicstring[100];
+	char statnext[100], status[200], wifistring[30], skypestring[30], musicstring[100];
 #ifdef MPD
 	struct mpd_song * song = NULL;
 	const char * title = NULL;
@@ -89,9 +89,9 @@ int main() {
 	for (;;) {
 		status[0]='\0';
 	// MUSIC
-		//if (++musicloops > 10) {
-		//	musicloops=0;
 #ifdef MPD
+		if (++musicloops > 10) {
+			musicloops=0;
 			struct mpd_connection * conn = mpd_connection_new(NULL, 0, 30000);
 			if (mpd_connection_get_error(conn))
 				sprintf(musicstring,NO_MPD_STR);
@@ -126,9 +126,12 @@ int main() {
 					}
 			mpd_response_finish(conn);
 			mpd_connection_free(conn);
-			strcat(status,musicstring);
+		}
+		strcat(status,musicstring);
 #endif
 #ifdef AUD
+		if (++musicloops > 10) {
+			musicloops=0;
 			connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
 			session = dbus_g_proxy_new_for_name(connection, AUDACIOUS_DBUS_SERVICE, AUDACIOUS_DBUS_PATH, AUDACIOUS_DBUS_INTERFACE);
 			playpos = audacious_remote_get_playlist_pos(session);
@@ -150,9 +153,9 @@ int main() {
 			}
 			g_object_unref(session);
 			session = NULL;
-			strcat(status,musicstring);
+		}
+		strcat(status,musicstring);
 #endif
-		//}
 	// SKYPE
 		if (++skypeloops > 20) {
 			skypeloops=0;
