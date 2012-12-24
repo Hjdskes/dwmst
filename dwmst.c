@@ -39,7 +39,7 @@
 #define SKYPE_STR		"Skype   \x02•\x01   "						// Skype is running
 #define NO_SKYPE_STR	""											// Skype is not running
 #define WIFI_STR		" %s %d%%   "								// WIFI
-#define NO_WIFI_STR		"  Geen verbinding   "						// WIFI, no connection
+#define NO_WIFI_STR		" Geen verbinding   "						// WIFI, no connection
 #define VOL_STR			"\x02•\x01   %d%%   "						// Volume
 #define VOL_MUTE_STR	"\x02•\x01       ×       "					// Volume, muted
 #define BAT_STR			"\x02•\x01   D  %d%%   "					// Battery, BAT, above BATT_LOW percentage
@@ -148,13 +148,13 @@ int main() {
 				} else {
 					sprintf(musicstring,MUSIC_S_STR);
 				}
-			} else {
-				sprintf(musicstring,MUSIC_S_STR);
+			//} else {
+			//	sprintf(musicstring,MUSIC_S_STR);
 			}
 			g_object_unref(session);
 			session = NULL;
+			strcat(status,musicstring);
 		}
-		strcat(status,musicstring);
 #endif
 	// SKYPE
 		if (++skypeloops > 20) {
@@ -163,11 +163,11 @@ int main() {
 			if (infile) {
 				sprintf(skypestring,SKYPE_STR);
 				fclose(infile);
+				strcat(status,skypestring);
 			}
-			else
-				sprintf(skypestring,NO_SKYPE_STR);
+			//else
+			//	sprintf(skypestring,NO_SKYPE_STR);
 		}
-		strcat(status,skypestring);
 	// WIFI
 		if (++wifiloops > 60) {
 			wifiloops=0;

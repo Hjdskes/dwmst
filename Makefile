@@ -20,5 +20,7 @@ clean:
 	rm -f $(PROG)
 
 install:
+	mkdir -p $(DESTDIR)/usr/bin
+	mkdir -p $(DESTDIR)/usr/lib/systemd/system
 	install -D $(PROG) $(DESTDIR)/usr/bin/$(PROG)
 	install -D $(POG).service $(DESTDIR)/usr/lib/systemd/system/$(PROG).service
