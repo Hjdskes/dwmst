@@ -34,10 +34,10 @@
 #ifdef AUD
 #define MUSIC_STR		"%s   \x02•\x01   "                         // Music, playing
 #define MUSIC_P_STR		"Paused\x02:\x01 %s   \x02•\x01   "         // Music, paused
-#define MUSIC_S_STR		""											// Music, stopped
+#define MUSIC_S_STR		" "											// Music, stopped
 #endif
 #define SKYPE_STR		"Skype   \x02•\x01   "						// Skype is running
-#define NO_SKYPE_STR	""											// Skype is not running
+#define NO_SKYPE_STR	" "											// Skype is not running
 #define WIFI_STR		" %s %d%%   "								// WIFI
 #define NO_WIFI_STR		"  Geen verbinding   "						// WIFI, no connection
 #define VOL_STR			"\x02•\x01   %d%%   "						// Volume
@@ -167,6 +167,7 @@ int main() {
 			}
 			else
 				sprintf(skypestring,NO_SKYPE_STR);
+			strcat(status,skypestring);
 		}
 	// WIFI
 		if (++wifiloops > 60) {
