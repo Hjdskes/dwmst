@@ -22,5 +22,5 @@ clean:
 install:
 	mkdir -p $(DESTDIR)/usr/bin
 	mkdir -p $(DESTDIR)/usr/lib/systemd/system
-	install -D $(PROG) $(DESTDIR)/usr/bin/$(PROG)
-	install -D dwmst.service $(DESTDIR)/usr/lib/systemd/system/dwmst.service
+	install -Dm755 $(PROG) $(DESTDIR)/usr/bin/
+	install -Dm644 dwmst.service $(DESTDIR)/usr/lib/systemd/system/
