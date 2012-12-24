@@ -1,5 +1,4 @@
 PROG     =  dwmst
-PREFIX   =  /usr/local
 
 # MPD, comment if you don't want it
 #MPDLIB   =  -lmpdclient
@@ -20,3 +19,6 @@ $(PROG): $(PROG).c
 clean:
 	rm -f $(PROG)
 
+install:
+	install -D $(PROG) $(DESTDIR)/usr/bin/$(PROG)
+	install -D $(POG).service $(DESTDIR)/usr/lib/systemd/system/$(PROG).service
