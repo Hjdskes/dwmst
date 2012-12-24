@@ -23,4 +23,4 @@ install:
 	mkdir -p $(DESTDIR)/usr/bin
 	mkdir -p $(DESTDIR)/usr/lib/systemd/system
 	install -Dm755 $(PROG) $(DESTDIR)/usr/bin/
-	install -Dm644 dwmst.service $(DESTDIR)/usr/lib/systemd/system/
+	install -Dm644 $(PROG).service $(DESTDIR)/usr/lib/systemd/system/
