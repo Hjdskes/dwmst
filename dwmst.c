@@ -28,7 +28,7 @@
 #ifdef MPD
 #define MPD_STR			"%s \x02-\x01 %s   \x02•\x01   "                    // MPD, playing
 #define MPD_P_STR		"Paused\x02:\x01 %s \x02-\x01 %s   \x02•\x01   "    // MPD, paused
-#define MPD_S_STR		""													// MPD, stopped
+#define MPD_S_STR		" "													// MPD, stopped
 #define NO_MPD_STR		"Geen verbinding   \x02•\x01   "					// MPD, can't connect
 #endif
 #ifdef AUD
@@ -163,7 +163,6 @@ int main() {
 			if (infile) {
 				sprintf(skypestring,SKYPE_STR);
 				fclose(infile);
-				strcat(status,skypestring);
 			}
 			else
 				sprintf(skypestring,NO_SKYPE_STR);
