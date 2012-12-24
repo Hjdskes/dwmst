@@ -148,13 +148,13 @@ int main() {
 				} else {
 					sprintf(musicstring,MUSIC_S_STR);
 				}
-			//} else {
-			//	sprintf(musicstring,MUSIC_S_STR);
+			} else {
+				sprintf(musicstring,MUSIC_S_STR);
 			}
 			g_object_unref(session);
 			session = NULL;
-			strcat(status,musicstring);
 		}
+		strcat(status,musicstring);
 #endif
 	// SKYPE
 		if (++skypeloops > 20) {
@@ -167,8 +167,8 @@ int main() {
 			}
 			else
 				sprintf(skypestring,NO_SKYPE_STR);
-			strcat(status,skypestring);
 		}
+		strcat(status,skypestring);
 	// WIFI
 		if (++wifiloops > 60) {
 			wifiloops=0;
