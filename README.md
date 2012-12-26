@@ -17,4 +17,3 @@ In order to succesfully compile this, you need to have the following dependencie
 
 ToDo:
 * Make a header file for cleanliness and practice;
-* Fix whitespace after WiFi when Skype's not running.

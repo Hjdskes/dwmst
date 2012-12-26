@@ -28,16 +28,16 @@
 #ifdef MPD
 #define MPD_STR			"%s \x02-\x01 %s   \x02•\x01   "                    // MPD, playing
 #define MPD_P_STR		"Paused\x02:\x01 %s \x02-\x01 %s   \x02•\x01   "    // MPD, paused
-#define MPD_S_STR		" "													// MPD, stopped
+#define MPD_S_STR		""													// MPD, stopped
 #define NO_MPD_STR		"Geen verbinding   \x02•\x01   "					// MPD, can't connect
 #endif
 #ifdef AUD
 #define MUSIC_STR		"%s   \x02•\x01   "                         // Music, playing
 #define MUSIC_P_STR		"Paused\x02:\x01 %s   \x02•\x01   "         // Music, paused
-#define MUSIC_S_STR		" "											// Music, stopped
+#define MUSIC_S_STR		""											// Music, stopped
 #endif
 #define SKYPE_STR		"Skype   \x02•\x01   "						// Skype is running
-#define NO_SKYPE_STR	" "											// Skype is not running
+#define NO_SKYPE_STR	""											// Skype is not running
 #define WIFI_STR		" %s %d%%   "								// WIFI
 #define NO_WIFI_STR		"  Geen verbinding   "						// WIFI, no connection
 #define VOL_STR			"\x02•\x01   %d%%   "						// Volume
@@ -51,9 +51,14 @@
 int main() {
 	Display *dpy;
 	Window root;
-	int num, skfd, wifiloops=60, skypeloops=20, musicloops=10;
-	long lnum1, lnum2;
+	int num, skfd, mute=0, realvol=0, wifiloops=60, skypeloops=20, musicloops=10;
+	long lnum1, lnum2, vol=0, max=0, min=0;
 	char statnext[100], status[200], wifistring[30], skypestring[30], musicstring[100];
+	struct wireless_info *winfo;
+	winfo = (struct wireless_info *) calloc(1, sizeof(struct wireless_info));
+	time_t current;
+	FILE *infile;
+	setlocale(LC_ALL, "");
 #ifdef MPD
 	struct mpd_song * song = NULL;
 	const char * title = NULL;
@@ -66,25 +71,15 @@ int main() {
 	DBusGConnection *connection = NULL;
 	session = 0;
 	psong = NULL;
+	g_type_init();
 #endif
-	struct wireless_info *winfo;
-	winfo = (struct wireless_info *) malloc(sizeof(struct wireless_info));
-	memset(winfo, 0, sizeof(struct wireless_info));
-	long vol = 0, max = 0, min = 0;
-	int mute = 0, realvol = 0;
-	time_t current;
-	FILE *infile;
 	// Setup X display and root window id:
 	dpy=XOpenDisplay(NULL);
-	if ( dpy == NULL) {
+	if (dpy == NULL) {
 		fprintf(stderr, "ERROR: could not open display\n");
 		exit(1);
 	}
 	root = XRootWindow(dpy,DefaultScreen(dpy));
-	setlocale(LC_ALL, "");
-#ifdef AUD
-	g_type_init();
-#endif
 // MAIN LOOP STARTS HERE
 	for (;;) {
 		status[0]='\0';
