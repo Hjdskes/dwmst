@@ -51,9 +51,9 @@
 int main() {
 	Display *dpy;
 	Window root;
-	int num, skfd, mute=0, realvol=0, wifiloops=60, skypeloops=20, musicloops=10;
+	int num, skfd, mute=0, realvol=0, wifiloops=60, musicloops=10;
 	long lnum1, lnum2, vol=0, max=0, min=0;
-	char statnext[100], status[200], wifistring[30], skypestring[30], musicstring[100];
+	char statnext[100], status[200], wifistring[30], musicstring[100];
 	struct wireless_info *winfo;
 	winfo = (struct wireless_info *) calloc(1, sizeof(struct wireless_info));
 	time_t current;
@@ -152,17 +152,14 @@ int main() {
 		strcat(status,musicstring);
 #endif
 	// SKYPE
-		if (++skypeloops > 20) {
-			skypeloops=0;
-			infile = fopen(SKYPE_FILE,"r");
-			if (infile) {
-				sprintf(skypestring,SKYPE_STR);
-				fclose(infile);
-			}
-			else
-				sprintf(skypestring,NO_SKYPE_STR);
+		infile = fopen(SKYPE_FILE,"r");
+		if (infile) {
+			sprintf(skypestring,SKYPE_STR);
+			fclose(infile);
 		}
-		strcat(status,skypestring);
+		else
+			sprintf(skypestring,NO_SKYPE_STR);
+		strcat(status,statnext);
 	// WIFI
 		if (++wifiloops > 60) {
 			wifiloops=0;
