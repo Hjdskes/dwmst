@@ -154,11 +154,11 @@ int main() {
 	// SKYPE
 		infile = fopen(SKYPE_FILE,"r");
 		if (infile) {
-			sprintf(skypestring,SKYPE_STR);
+			sprintf(statnext,SKYPE_STR);
 			fclose(infile);
 		}
 		else
-			sprintf(skypestring,NO_SKYPE_STR);
+			sprintf(statnext,NO_SKYPE_STR);
 		strcat(status,statnext);
 	// WIFI
 		if (++wifiloops > 60) {
