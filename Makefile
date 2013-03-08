@@ -9,9 +9,12 @@ PREFIX  ?= /usr/local
 AUDLIB	 =  `pkg-config --cflags --libs glib-2.0 dbus-glib-1 audclient`
 AUDFLAG  =  -DAUD
 
+# Clock, comment if you don't want it
+#CLKFLAG  =  -DCLK
+
 LIBS     =  -liw -lasound -lX11 ${MPDLIB} ${AUDLIB}
-CPPFLAGS =  ${MPDFLAG} ${AUDFLAG}
-CFLAGS   =  -Os -Wall -Wno-unused-parameter -Wno-unused-result ${CPPFLAGS}
+CPPFLAGS =  ${MPDFLAG} ${AUDFLAG} ${CLKFLAG}
+CFLAGS   =  -Os -Wall -Wextra -pedantic -Wno-format-zero-length -Wno-unused-parameter -Wno-unused-result ${CPPFLAGS}
 
 ${PROG}: ${PROG}.c
 	@${CC} ${CFLAGS} ${LIBS} -o ${PROG} ${PROG}.c

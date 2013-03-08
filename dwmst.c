@@ -2,11 +2,13 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <time.h>
 #include <locale.h>
 #include <X11/Xlib.h>
 #include <iwlib.h>
 #include <alsa/asoundlib.h>
+#ifdef CLK
+#include <time.h>
+#endif
 #ifdef MPD
 #include <mpd/client.h>
 #endif
@@ -26,60 +28,73 @@
 #define BATT_STAT		"/sys/class/power_supply/BAT0/status"
 /* Display format strings. Defaults make extensive use of escape characters for colors which require colorstatus patch. */
 #ifdef MPD
-#define MPD_STR			"%s \x02-\x01 %s   \x02•\x01   "                    /* MPD, playing */
-#define MPD_P_STR		"Paused\x02:\x01 %s \x02-\x01 %s   \x02•\x01   "    /* MPD, paused */
-#define MPD_S_STR		""													/* MPD, stopped */
-#define NO_MPD_STR		"Geen verbinding   \x02•\x01   "					/* MPD, can't connect */
+#define MPD_STR			"\x02%s \x01 - \x02 %s  "		/* MPD, playing */
+#define MPD_P_STR		"Paused: \x02 %s \x01 - \x02 %s  "	/* MPD, paused */
+#define MPD_S_STR		""								/* MPD, stopped */
+#define NO_MPD_STR		"Geen verbinding  "				/* MPD, can't connect */
 #endif
 #ifdef AUD
-#define MUSIC_STR		"%s   \x02•\x01   "                         /* Music, playing */
-#define MUSIC_P_STR		"Paused\x02:\x01 %s   \x02•\x01   "         /* Music, paused */
-#define MUSIC_S_STR		""											/* Music, stopped */
+#define MUSIC_STR		"\x02%s  "						/* Music, playing */
+#define MUSIC_P_STR		"P: \x02 %s  "					/* Music, paused */
+#define MUSIC_S_STR		""								/* Music, stopped */
 #endif
-#define SKYPE_STR		"Skype   \x02•\x01   "						/* Skype is running */
-#define NO_SKYPE_STR	""											/* Skype is not running */
-#define WIFI_STR		" %s %d%%   "								/* WIFI */
-#define NO_WIFI_STR		" Geen verbinding   "						/* WIFI, no connection */
-#define VOL_STR			"\x02•\x01   %d%%   "						/* Volume */
-#define VOL_MUTE_STR	"\x02•\x01       ×       "					/* Volume, muted */
-#define BAT_STR			"\x02•\x01   D  %d%%   "					/* Battery, BAT, above BATT_LOW percentage */
-#define BAT_LOW_STR		"\x02•\x03   D  %d%%   "					/* Battery, BAT, below BATT_LOW percentage */
-#define BAT_FULL_STR	"\x02•\x04   F  \x01%d%%   "				/* Battery, full */
-#define BAT_CHRG_STR	"\x02•\x01   C  %d%%   "					/* Battery, AC */
-#define DATE_TIME_STR	"\x02•\x01   %a %d %b\x02,\x01 %H:%M   "	/* This is a strftime format string which is passed localtime */
+#define SKYPE_STR		"\x02Skype "					/*Skype is running */
+#define NO_SKYPE_STR	""								/* Skype is not running */
+#define WIFI_STR		"\x01 %s \x02 %d%% "			/* WIFI */
+#define NO_WIFI_STR		"\x01 Geen verbinding "			/* WIFI, no connection */
+#define VOL_STR			"\x01 Volume \x02 %d%% "		/* Volume */
+#define VOL_MUTE_STR	"\x01 Volume \x02 × "			/* Volume, muted */
+#define BAT_STR			"\x01 Batterij \x02 D %d%%"		/* Battery, BAT, above BATT_LOW percentage */
+#define BAT_LOW_STR		"\x01 Batterij \x02 D %d%%"		/* Battery, BAT, below BATT_LOW percentage */
+#define BAT_FULL_STR	"\x01 Batterij \x02 F %d%%"		/* Battery, full */
+#define BAT_CHRG_STR	"\x01 Batterij \x02 C %d%%"		/* Battery, AC */
+#ifdef CLK
+#define DATE_TIME_STR	"\x01 %a \x02%d \x01%b,\x02 %H:%M"	/* This is a strftime format string which is passed localtime */
+#endif
 
 int main() {
 	Display *dpy;
 	Window root;
+	FILE *infile;
 	int num, skfd, mute=0, realvol=0, wifiloops=60, musicloops=10;
 	long lnum1, lnum2, vol=0, max=0, min=0;
 	char statnext[100], status[200], wifistring[30], musicstring[100];
 	struct wireless_info *winfo;
-	winfo = (struct wireless_info *) calloc(1, sizeof(struct wireless_info));
+	snd_mixer_t *handle;
+	snd_mixer_selem_id_t *vol_info, *mute_info;
+	snd_mixer_elem_t *pcm_mixer;
+	snd_mixer_elem_t *mas_mixer;
+#ifdef CLK
 	time_t current;
-	FILE *infile;
-	setlocale(LC_ALL, "");
+#endif
 #ifdef MPD
-	struct mpd_song * song = NULL;
-	const char * title = NULL;
-	const char * artist = NULL;
+	struct mpd_song *song = NULL;
+	const char *title = NULL;
+	const char *artist = NULL;
 #endif
 #ifdef AUD
-	gint playpos;
-	gchar *psong;
-	DBusGProxy *session = NULL;
-	DBusGConnection *connection = NULL;
-	session = 0;
-	psong = NULL;
-	g_type_init();
+	int playpos;
+	char *psong;
+	DBusGProxy *session;
+	DBusGConnection *connection;
 #endif
-	/* Setup X display and root window id: */
-	dpy=XOpenDisplay(NULL);
+	/* Setup X display and root window id */
+	dpy = XOpenDisplay(NULL);
 	if (dpy == NULL) {
 		fprintf(stderr, "ERROR: could not open display\n");
 		exit(1);
 	}
 	root = XRootWindow(dpy,DefaultScreen(dpy));
+	winfo = (struct wireless_info *) calloc(1, sizeof(struct wireless_info));
+#ifdef CLK
+	setlocale(LC_ALL, "");
+#endif
+#ifdef AUD
+	g_type_init();
+	session = NULL;
+	connection = NULL;
+	psong = NULL;
+#endif
 /* MAIN LOOP STARTS HERE */
 	for (;;) {
 		status[0]='\0';
@@ -89,7 +104,7 @@ int main() {
 			musicloops=0;
 			struct mpd_connection * conn = mpd_connection_new(NULL, 0, 30000);
 			if (mpd_connection_get_error(conn))
-				sprintf(musicstring,NO_MPD_STR);
+				sprintf(musicstring, NO_MPD_STR);
 
 			mpd_command_list_begin(conn, true);
 			mpd_send_status(conn);
@@ -98,14 +113,14 @@ int main() {
 
 			struct mpd_status* theStatus = mpd_recv_status(conn);
 				if (!theStatus)
-					sprintf(musicstring,NO_MPD_STR);
+					sprintf(musicstring, NO_MPD_STR);
 				else
 					if (mpd_status_get_state(theStatus) == MPD_STATE_PLAY) {
 						mpd_response_next(conn);
 						song = mpd_recv_song(conn);
 						title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
 						artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
-						sprintf(musicstring,MPD_STR,title,artist);
+						sprintf(musicstring, MPD_STR, title, artist);
 						mpd_song_free(song);
 					}
 					else if (mpd_status_get_state(theStatus) == MPD_STATE_PAUSE) {
@@ -113,16 +128,16 @@ int main() {
 						song = mpd_recv_song(conn);
 						title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
 						artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
-						sprintf(musicstring,MPD_P_STR,title,artist);
+						sprintf(musicstring, MPD_P_STR, title, artist);
 						mpd_song_free(song);
 					}
 					else if (mpd_status_get_state(theStatus) == MPD_STATE_STOP) {
-						sprintf(musicstring,MPD_S_STR);
+						sprintf(musicstring, MPD_S_STR);
 					}
 			mpd_response_finish(conn);
 			mpd_connection_free(conn);
 		}
-		strcat(status,musicstring);
+		strcat(status, musicstring);
 #endif
 #ifdef AUD
 		if (++musicloops > 10) {
@@ -133,33 +148,33 @@ int main() {
 			psong = audacious_remote_get_playlist_title(session, playpos);
 			if (psong) {
 				if (audacious_remote_is_paused(session)) {
-					sprintf(musicstring,MUSIC_P_STR,psong);
-					g_free(psong);
+					sprintf(musicstring, MUSIC_P_STR, psong);
+					free(psong);
 					psong = NULL;
 				} else if (audacious_remote_is_playing(session)) {
-					sprintf(musicstring,MUSIC_STR,psong);
-					g_free(psong);
+					sprintf(musicstring, MUSIC_STR, psong);
+					free(psong);
 					psong = NULL;
 				} else {
-					sprintf(musicstring,MUSIC_S_STR);
+					sprintf(musicstring, MUSIC_S_STR);
 				}
 			} else {
-				sprintf(musicstring,MUSIC_S_STR);
+				sprintf(musicstring, MUSIC_S_STR);
 			}
 			g_object_unref(session);
 			session = NULL;
 		}
-		strcat(status,musicstring);
+		strcat(status, musicstring);
 #endif
 	/* SKYPE */
-		infile = fopen(SKYPE_FILE,"r");
+		infile = fopen(SKYPE_FILE, "r");
 		if (infile) {
-			sprintf(statnext,SKYPE_STR);
+			sprintf(statnext, SKYPE_STR);
 			fclose(infile);
 		}
 		else
-			sprintf(statnext,NO_SKYPE_STR);
-		strcat(status,statnext);
+			sprintf(statnext, NO_SKYPE_STR);
+		strcat(status, statnext);
 	/* WIFI */
 		if (++wifiloops > 60) {
 			wifiloops=0;
@@ -174,9 +189,9 @@ int main() {
 				}
 				if (winfo->b.has_essid) {
 					if (winfo->b.essid_on) {
-						sprintf(wifistring,WIFI_STR,winfo->b.essid,(winfo->stats.qual.qual*100)/winfo->range.max_qual.qual);
+						sprintf(wifistring, WIFI_STR, winfo->b.essid, (winfo->stats.qual.qual*100)/winfo->range.max_qual.qual);
 					} else {
-						sprintf(wifistring,NO_WIFI_STR);
+						sprintf(wifistring, NO_WIFI_STR);
 					}
 				}
 			}
@@ -186,29 +201,26 @@ int main() {
 		}
 		strcat(status,wifistring);
 	/* Audio volume */
-		snd_mixer_t *handle; /* init alsa */
 		snd_mixer_open(&handle, 0);
 		snd_mixer_attach(handle, "default");
 		snd_mixer_selem_register(handle, NULL, NULL);
 		snd_mixer_load(handle);
-		snd_mixer_selem_id_t *vol_info; /* init channel with volume info */
 		snd_mixer_selem_id_malloc(&vol_info);
 		snd_mixer_selem_id_set_name(vol_info, VOL_CH);
-		snd_mixer_elem_t* pcm_mixer = snd_mixer_find_selem(handle, vol_info);
+		pcm_mixer = snd_mixer_find_selem(handle, vol_info);
 		snd_mixer_selem_get_playback_volume_range(pcm_mixer, &min, &max); /* get volume */
 		snd_mixer_selem_get_playback_volume(pcm_mixer, SND_MIXER_SCHN_MONO, &vol);
-		snd_mixer_selem_id_t *mute_info; /* init channel with mute info */
 		snd_mixer_selem_id_malloc(&mute_info);
 		snd_mixer_selem_id_set_name(mute_info, VOL_CH);
-		snd_mixer_elem_t* mas_mixer = snd_mixer_find_selem(handle, mute_info);
+		mas_mixer = snd_mixer_find_selem(handle, mute_info);
 		snd_mixer_selem_get_playback_switch(mas_mixer, SND_MIXER_SCHN_MONO, &mute); /* get mute state */
 
-		if(mute == 0)
+		if(mute == 0) {
 			sprintf(statnext, VOL_MUTE_STR);
-		else
+		} else {
 			realvol = (vol*100)/max;
 			sprintf(statnext, VOL_STR, realvol);
-
+		}
 		if(vol_info)
 			snd_mixer_selem_id_free(vol_info);
 		if (mute_info)
@@ -217,32 +229,32 @@ int main() {
 			snd_mixer_close(handle);
 		strcat(status,statnext);
 	/* Power / Battery */
-		infile = fopen(BATT_NOW,"r");
-			fscanf(infile,"%ld\n",&lnum1); fclose(infile);
-		infile = fopen(BATT_FULL,"r");
-			fscanf(infile,"%ld\n",&lnum2); fclose(infile);
-		infile = fopen(BATT_STAT,"r");
-			fscanf(infile,"%s\n",statnext); fclose(infile);
-		num = lnum1*100/lnum2;
-		if (strncmp(statnext,"Charging",8) == 0) {
-			sprintf(statnext,BAT_CHRG_STR,num);
-		}
-		else if (strncmp(statnext,"Full",8) == 0) {
-				sprintf(statnext,BAT_FULL_STR,num);
-		}
-		else {
+		infile = fopen(BATT_NOW, "r");
+			fscanf(infile, "%ld\n", &lnum1); fclose(infile);
+		infile = fopen(BATT_FULL, "r");
+			fscanf(infile, "%ld\n", &lnum2); fclose(infile);
+		infile = fopen(BATT_STAT, "r");
+			fscanf(infile, "%s\n", statnext); fclose(infile);
+		num = (lnum1*100)/lnum2;
+		if (strncmp(statnext, "Charging", 8) == 0) {
+			sprintf(statnext, BAT_CHRG_STR, num);
+		} else if (strncmp(statnext, "Full", 8) == 0) {
+				sprintf(statnext, BAT_FULL_STR, num);
+		} else {
 			if (num <  BATT_LOW)
-				sprintf(statnext,BAT_LOW_STR,num);
+				sprintf(statnext, BAT_LOW_STR, num);
 			else
-				sprintf(statnext,BAT_STR,num);
+				sprintf(statnext, BAT_STR, num);
 		}
-		strcat(status,statnext);
+		strcat(status, statnext);
 	/* Time */
+#ifdef CLK
 		time(&current);
-		strftime(statnext,38,DATE_TIME_STR,localtime(&current));
-		strcat(status,statnext);
+		strftime(statnext, 38, DATE_TIME_STR, localtime(&current));
+		strcat(status, statnext);
+#endif
 	/* Set root name */
-		XStoreName(dpy,root,status);
+		XStoreName(dpy, root, status);
 		XFlush(dpy);
 		sleep(INTERVAL);
 	}
