@@ -1,13 +1,13 @@
 pkgname=dwm-status
-pkgver=20130125
+pkgver=20130308
 pkgrel=1
 pkgdesc='A hardcoded statusbar for DWM'
 arch=(any)
 url='https://github.com/Unia/dwmst'
 license=(custom)
 depends=(libx11 wireless_tools alsa-lib)
-optdepends=(audacious: to have Audacious current song in the statusbar
-			libmpdclient: to have mpd current song in the statusbar)
+optdepends=('audacious: to have Audacious current song in the statusbar'
+			'libmpdclient: to have mpd current song in the statusbar')
 makedepends=(git)
 conflicts=()
 
