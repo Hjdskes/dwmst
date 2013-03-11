@@ -151,7 +151,7 @@ int main() {
         perc = (now * 100) / full;
         if (strncmp(state, "Full", 8) == 0)
             sprintf(statnext, BAT_FULL_STR, perc);
-        if(strncmp(state, "Unknown", 8) == 0)
+        else if(strncmp(state, "Unknown", 8) == 0)
             sprintf(statnext, BAT_UNK_STR);
         else if (strncmp(state, "Charging", 8) == 0) {
 			seconds = 3600 * (((float)full - (float)now) / (float)rate);
