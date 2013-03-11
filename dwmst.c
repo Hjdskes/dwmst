@@ -133,7 +133,6 @@ int main() {
 		snd_mixer_selem_id_set_name(mute_info, VOL_CH);
 		mas_mixer = snd_mixer_find_selem(handle, mute_info);
 		snd_mixer_selem_get_playback_switch(mas_mixer, SND_MIXER_SCHN_MONO, &mute); /* get mute state */
-
 		if(mute == 0) {
 			sprintf(statnext, VOL_MUTE_STR);
 		} else {
@@ -162,7 +161,6 @@ int main() {
 		full = ((float)voltage / 1000) * ((float)full / 1000);
 		rate = ((float)voltage / 1000) * ((float)rate / 1000);
 		perc = (now * 100) / full;
-
 		if (strncmp(statnext, "Full", 8) == 0) {
 			sprintf(statnext, BAT_FULL_STR, perc);
 		} else if (strncmp(statnext, "Charging", 8) == 0) {
@@ -171,14 +169,14 @@ int main() {
 			seconds -= 3600 * hours;
 			minutes = seconds / 60;
 			seconds -= 60 * minutes;
-			sprintf(statnext, BAT_CHRG_STR, perc, hours, minutes); 
+			sprintf(statnext, BAT_CHRG_STR, perc, hours, minutes);
 		} else {
 			seconds = 3600 * ((float)now / (float)rate);
             hours = seconds / 3600;
 			seconds -= 3600 * hours;
 			minutes = seconds / 60;
 			seconds -= 60 * minutes;
-			if (perc <  BATT_LOW_P || minutes < BATT_LOW_T) {				
+			if (perc <  BATT_LOW_P || minutes < BATT_LOW_T) {
 				sprintf(statnext, BAT_LOW_STR, perc, hours, minutes);
 			} else {
 				sprintf(statnext, BAT_STR, perc, hours, minutes);
