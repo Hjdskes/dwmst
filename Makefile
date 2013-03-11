@@ -16,7 +16,7 @@ LIBS     =  -liw -lasound -lX11 ${MPDLIB} ${AUDLIB}
 CPPFLAGS =  ${MPDFLAG} ${AUDFLAG} ${CLKFLAG}
 CFLAGS   =  -Os -Wall -Wextra -pedantic -Wno-format-zero-length -Wno-unused-parameter -Wno-unused-result ${CPPFLAGS}
 
-${PROG}: ${PROG}.c
+${PROG}: ${PROG}.c ${PROG}.h
 	@${CC} ${CFLAGS} ${LIBS} -o ${PROG} ${PROG}.c
 	@strip ${PROG}
 
