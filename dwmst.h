@@ -51,6 +51,7 @@
 #define BAT_STR         "\x01 Batterij \x02 D %d%%, %02d:%02d resterend"        /* Battery, discharging, above BATT_LOW percentage */
 #define BAT_LOW_STR     "\x01 Batterij \x02 D %d%%, %02d:%02d resterend"        /* Battery, discharging, below BATT_LOW percentage */
 #define BAT_CHRG_STR    "\x01 Batterij \x02 C %d%%, %02d:%02d tot opgeladen"    /* Battery, AC */
+#define BAT_UNK_STR     "\x01 Batterij \x02 U"                                /* Battery, unknown */
 #ifdef CLK
 #define DATE_TIME_STR   "\x01 %a \x02%d \x01%b,\x02 %H:%M"                      /* This is a strftime format string which is passed localtime */
 #endif
@@ -60,7 +61,7 @@ Window root;
 FILE *infile;
 int perc, hours, minutes, seconds = -1, skfd, mute = 0, realvol = 0, wifiloops = 60, musicloops = 10;
 long now = -1, full = -1, voltage = -1, rate = -1, vol = 0, max = 0, min = 0;
-char statnext[100], status[200], wifistring[30], musicstring[100];
+char state[8], statnext[100], status[200], wifistring[30], musicstring[100];
 struct wireless_info *winfo;
 snd_mixer_t *handle;
 snd_mixer_elem_t *pcm_mixer, *mas_mixer;
