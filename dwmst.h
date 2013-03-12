@@ -46,7 +46,7 @@
 #define WIFI_STR        "\x01 %s \x02 %d%% "                                    /* WIFI */
 #define NO_WIFI_STR     "\x01 Geen verbinding "                                 /* WIFI, no connection */
 #define VOL_STR         "\x01 Volume \x02 %d%% "                                /* Volume */
-#define VOL_MUTE_STR    "\x01 Volume \x02 × "                                   /* Volume, muted */
+#define VOL_MUTE_STR    "\x01 Volume \x02 M "                                   /* Volume, muted */
 #define BAT_FULL_STR    "\x01 Batterij \x02 F %d%%"                             /* Battery, full */
 #define BAT_STR         "\x01 Batterij \x02 D %d%%, %02d:%02d resterend"        /* Battery, discharging, above BATT_LOW percentage */
 #define BAT_LOW_STR     "\x01 Batterij \x02 D %d%%, %02d:%02d resterend"        /* Battery, discharging, below BATT_LOW percentage */
