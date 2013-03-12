@@ -1,5 +1,5 @@
 pkgname=dwm-status
-pkgver=20130311
+pkgver=20130312
 pkgrel=1
 pkgdesc='A hardcoded statusbar for DWM'
 arch=(any)

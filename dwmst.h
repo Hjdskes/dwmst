@@ -17,7 +17,7 @@
 #include <audacious/audctrl.h>
 #endif
 
-#define WIFI            "wlan0"     /* Wireless interface */
+#define WIFI            "wlp5s0"    /* Wireless interface */
 #define BATT_LOW_P      11          /* Below BATT_LOW percentage left on battery, the battery display turns red */
 #define BATT_LOW_T      3           /* Same as above, but now minutes instead of percentage */
 #define INTERVAL        1           /* Sleeps for INTERVAL seconds between updates */

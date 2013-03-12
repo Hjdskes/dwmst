@@ -90,11 +90,9 @@ int main() {
             wifiloops = 0;
             skfd = iw_sockets_open();
             if (iw_get_basic_config(skfd, WIFI, &(winfo->b)) > -1) {
-                if (iw_get_stats(skfd, WIFI, &(winfo->stats), /* set present winfo variables */
-                    &winfo->range, winfo->has_range) >= 0) {
+                if (iw_get_stats(skfd, WIFI, &(winfo->stats), &winfo->range, winfo->has_range) >= 0)
                     winfo->has_stats = 1;
-                }
-                if (iw_get_range_info(skfd, WIFI, &(winfo->range)) >= 0) /* set present winfo variables */
+                if (iw_get_range_info(skfd, WIFI, &(winfo->range)) >= 0)
                     winfo->has_range = 1;
                 if (winfo->b.has_essid) {
                     if (winfo->b.essid_on)
