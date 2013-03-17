@@ -15,6 +15,3 @@ In order to succesfully compile this, you need to have the following dependencie
 * libx11
 * wireless_tools
 * alsa-lib
-
-ToDo:
-* Fix statuscolor colorcodes messing up the statustext.

@@ -1,8 +1,9 @@
 pkgname=dwm-status
-pkgver=20130312
+pkgver=20130316
 pkgrel=1
 pkgdesc='A hardcoded statusbar for DWM'
 arch=(any)
+groups=(custom)
 url='https://github.com/Unia/dwmst'
 license=(custom)
 depends=(libx11 wireless_tools alsa-lib)
