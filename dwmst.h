@@ -41,12 +41,12 @@
 #define MUSIC_P_STR     "P: \x02%s "                                           /* Music, paused */
 #define MUSIC_S_STR     ""                                                     /* Music, stopped */
 #endif
-#define SKYPE_STR       "\x02Skype \x01"                                           /*Skype is running */
+#define SKYPE_STR       "\x02Skype \x01"                                       /*Skype is running */
 #define NO_SKYPE_STR    ""                                                     /* Skype is not running */
 #define WIFI_STR        "%s \x02%d%% \x01"                                     /* WIFI */
 #define NO_WIFI_STR     "Geen verbinding \x01"                                 /* WIFI, no connection */
-#define VOL_STR         "Volume \x02%d%% \x01"                             /* Volume */
-#define VOL_MUTE_STR    "Volume \x02M \x01"                                /* Volume, muted */
+#define VOL_STR         "Volume \x02%d%% \x01"                                 /* Volume */
+#define VOL_MUTE_STR    "Volume \x02M \x01"                                    /* Volume, muted */
 #define BAT_FULL_STR    "Batterij\x02 F %d%% "                                 /* Battery, full */
 #define BAT_STR         "Batterij\x02 D %d%%\x01, \x02%02d:%02d resterend "        /* Battery, discharging, above BATT_LOW percentage */
 #define BAT_LOW_STR     "Batterij\x02 D %d%%\x01, \x02%02d:%02d resterend "        /* Battery, discharging, below BATT_LOW percentage */
