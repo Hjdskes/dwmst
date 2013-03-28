@@ -170,7 +170,6 @@ int main() {
 		}
 		hours = minutes = seconds = 0;
 		strcat(status, statnext);
-	/* Time */
 #ifdef CLK
 		time(&current);
 		strftime(statnext, 38, DATE_TIME_STR, localtime(&current));
