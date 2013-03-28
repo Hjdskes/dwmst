@@ -71,8 +71,7 @@ time_t current;
 #endif
 #ifdef MPD
 struct mpd_song *song = NULL;
-const char *title = NULL;
-const char *artist = NULL;
+const char *title = NULL, *artist = NULL;
 #endif
 #ifdef AUD
 int playpos;
