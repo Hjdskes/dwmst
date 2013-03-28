@@ -3,8 +3,8 @@ Description=restarts dwmst after suspend
 After=suspend.target
 
 [Service]
-User=jente
-Type=forking
+User=%I
+Type=simple
 Environment=DISPLAY=:0
 ExecStart=/usr/bin/dwmst
 
