@@ -15,11 +15,6 @@ conflicts=()
 _gitroot="https://github.com/Unia/dwmst"
 _gitname="dwmst"
 
-pkgver() {
-	cd "$srcdir/$_gitname"
-	git log -1 --format="%cd" --date=short | sed 's|-|.|g'
-}
-
 build() {
 	cd "$srcdir"/
 	msg "Connecting to GIT server...."
@@ -36,6 +31,11 @@ build() {
 	cd ${srcdir}/${_gitname}
 
 	make
+}
+
+pkgver() {
+	cd "$srcdir/$_gitname"
+	git log -1 --format="%cd" --date=short | sed 's|-|.|g'
 }
 
 package() {
