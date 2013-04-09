@@ -1,5 +1,5 @@
 pkgname=dwm-status
-pkgver=20130328
+pkgver=2013.03.28
 pkgrel=1
 pkgdesc='A hardcoded statusbar for DWM'
 arch=(any)
@@ -14,6 +14,11 @@ conflicts=()
 
 _gitroot="https://github.com/Unia/dwmst"
 _gitname="dwmst"
+
+pkgver() {
+	cd "$srcdir/$_gitname"
+	git log -1 --format="%cd" --date=short | sed 's|-|.|g'
+}
 
 build() {
 	cd "$srcdir"/
