@@ -11,9 +11,9 @@ Installation
 ------------
 
 In order to succesfully compile this, you need to have the following dependencies installed:
-* libx11
-* wireless_tools
-* alsa-lib
+* `libx11`
+* `wireless_tools`
+* `alsa-lib`
 
 The program supports two music players (MPD and Audacious). You can choose which to support by editing the Makefile before compiling. Just comment out the LIB and FLAG lines of the music player you don't want. You will also need certain dependencies to support this output:
 * `libmpdclient` for MPD;
