@@ -30,7 +30,7 @@
 #define BATT_STAT       "/sys/class/power_supply/BAT0/status"
 #define BATT_VOLT       "/sys/class/power_supply/BAT0/voltage_now"
 #define BATT_CNOW       "/sys/class/power_supply/BAT0/current_now"
-#define NET_FILE        "/sys/class/net/enp3s0/carrier"
+#define NET_FILE        "/sys/class/net/LAN/carrier"
 /* Display format strings. Defaults make extensive use of escape characters for colors which require colorstatus patch. */
 #ifdef MPD
 #define MPD_STR	        "\x02%s \x01 - \x02 %s "                               /* MPD, playing */
