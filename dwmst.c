@@ -84,26 +84,32 @@ int main() {
 		} else
 			sprintf(statnext, NO_SKYPE_STR);
 		strcat(status, statnext);
-	/* WIFI */
-		if (++wifiloops > 60) {
-			wifiloops = 0;
-			skfd = iw_sockets_open();
-			if (iw_get_basic_config(skfd, WIFI, &(winfo->b)) > -1) {
-				if (iw_get_stats(skfd, WIFI, &(winfo->stats), &winfo->range, winfo->has_range) >= 0)
-					winfo->has_stats = 1;
-				if (iw_get_range_info(skfd, WIFI, &(winfo->range)) >= 0)
-					winfo->has_range = 1;
-				if (winfo->b.has_essid) {
-					if (winfo->b.essid_on)
-						sprintf(wifistring, WIFI_STR, winfo->b.essid, (winfo->stats.qual.qual * 100) / winfo->range.max_qual.qual);
-					else
-						sprintf(wifistring, NO_WIFI_STR);
+	/* NET */
+		if (++netloops > 60) {
+			netloops = 0;
+			infile = fopen(NET_FILE, "r");
+				fscanf(infile, "%d\n", &net); fclose(infile);
+			if(net == 1)
+				sprintf(netstring, LAN_STR);
+			else {
+				skfd = iw_sockets_open();
+				if (iw_get_basic_config(skfd, WLAN, &(winfo->b)) > -1) {
+					if (iw_get_stats(skfd, WLAN, &(winfo->stats), &winfo->range, winfo->has_range) >= 0)
+						winfo->has_stats = 1;
+					if (iw_get_range_info(skfd, WLAN, &(winfo->range)) >= 0)
+						winfo->has_range = 1;
+					if (winfo->b.has_essid) {
+						if (winfo->b.essid_on)
+							sprintf(netstring, WLAN_STR, winfo->b.essid, (winfo->stats.qual.qual * 100) / winfo->range.max_qual.qual);
+						else
+							sprintf(netstring, NO_WLAN_STR);
+					}
 				}
+				iw_sockets_close(skfd);
+				memset(winfo, 0, sizeof(struct wireless_info));
 			}
-			iw_sockets_close(skfd);
-			memset(winfo, 0, sizeof(struct wireless_info));
 		}
-		strcat(status,wifistring);
+		strcat(status, netstring);
 	/* Audio volume */
 		snd_mixer_open(&handle, 0);
 		snd_mixer_attach(handle, "default");

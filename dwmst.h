@@ -17,7 +17,8 @@
 #include <audacious/audctrl.h>
 #endif
 
-#define WIFI            "wlp5s0"    /* Wireless interface */
+#define LAN             "enp3s0"    /* Wired interface */
+#define WLAN            "wlp5s0"    /* Wireless interface */
 #define BATT_LOW_P      11          /* Below BATT_LOW percentage left on battery, the battery display turns red */
 #define BATT_LOW_T      3           /* Same as above, but now minutes instead of percentage */
 #define INTERVAL        1           /* Sleeps for INTERVAL seconds between updates */
@@ -29,6 +30,7 @@
 #define BATT_STAT       "/sys/class/power_supply/BAT0/status"
 #define BATT_VOLT       "/sys/class/power_supply/BAT0/voltage_now"
 #define BATT_CNOW       "/sys/class/power_supply/BAT0/current_now"
+#define NET_FILE        "/sys/class/net/enp3s0/carrier"
 /* Display format strings. Defaults make extensive use of escape characters for colors which require colorstatus patch. */
 #ifdef MPD
 #define MPD_STR	        "\x02%s \x01 - \x02 %s "                               /* MPD, playing */
@@ -43,8 +45,9 @@
 #endif
 #define SKYPE_STR       "\x02Skype \x01"                                       /*Skype is running */
 #define NO_SKYPE_STR    ""                                                     /* Skype is not running */
-#define WIFI_STR        "%s \x02%d%% \x01"                                     /* WIFI */
-#define NO_WIFI_STR     "Geen verbinding \x01"                                 /* WIFI, no connection */
+#define LAN_STR         "Verbonden \x01"                                       /* LAN */
+#define WLAN_STR        "%s \x02%d%% \x01"                                     /* WLAN */
+#define NO_WLAN_STR     "Geen verbinding \x01"                                 /* WLAN, no connection */
 #define VOL_STR         "Volume \x02%d%% \x01"                                 /* Volume */
 #define VOL_MUTE_STR    "Volume \x02M \x01"                                    /* Volume, muted */
 #define BAT_FULL_STR    "Batterij\x02 F %d%% "                                 /* Battery, full */
@@ -59,9 +62,9 @@
 Display *dpy;
 Window root;
 FILE *infile;
-int perc, hours, minutes, seconds = -1, skfd, mute = 0, realvol = 0, wifiloops = 60, musicloops = 10;
+int perc, hours, minutes, seconds = -1, net, skfd, mute = 0, realvol = 0, netloops = 60, musicloops = 10;
 long now = -1, full = -1, voltage = -1, rate = -1, vol = 0, max = 0, min = 0;
-char state[8], statnext[100], status[200], wifistring[30], musicstring[100];
+char state[8], statnext[100], status[200], netstring[30], musicstring[100];
 struct wireless_info *winfo;
 snd_mixer_t *handle;
 snd_mixer_elem_t *pcm_mixer, *mas_mixer;
