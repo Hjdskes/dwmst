@@ -87,11 +87,10 @@ int main() {
 	/* NET */
 		if (++netloops > 60) {
 			netloops = 0;
-			infile = fopen(NET_FILE, "r");
-				fscanf(infile, "%d\n", &net); fclose(infile);
-			if(net == 1)
+			if(fopen(NET_FILE, "r")) {
+				fclose(infile);
 				sprintf(netstring, LAN_STR);
-			else {
+			} else {
 				skfd = iw_sockets_open();
 				if (iw_get_basic_config(skfd, WLAN, &(winfo->b)) > -1) {
 					if (iw_get_stats(skfd, WLAN, &(winfo->stats), &winfo->range, winfo->has_range) >= 0)

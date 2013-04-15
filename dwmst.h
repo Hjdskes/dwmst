@@ -43,7 +43,7 @@
 #define MUSIC_P_STR     "P: \x02%s "                                           /* Music, paused */
 #define MUSIC_S_STR     ""                                                     /* Music, stopped */
 #endif
-#define SKYPE_STR       "\x02Skype \x01"                                       /*Skype is running */
+#define SKYPE_STR       "\x02Skype \x01"                                       /* Skype is running */
 #define NO_SKYPE_STR    ""                                                     /* Skype is not running */
 #define LAN_STR         "Verbonden \x01"                                       /* LAN */
 #define WLAN_STR        "%s \x02%d%% \x01"                                     /* WLAN */
@@ -62,7 +62,7 @@
 Display *dpy;
 Window root;
 FILE *infile;
-int perc, hours, minutes, seconds = -1, net, skfd, mute = 0, realvol = 0, netloops = 60, musicloops = 10;
+int perc, hours, minutes, seconds = -1, skfd, mute = 0, realvol = 0, netloops = 60, musicloops = 10;
 long now = -1, full = -1, voltage = -1, rate = -1, vol = 0, max = 0, min = 0;
 char state[8], statnext[100], status[200], netstring[30], musicstring[100];
 struct wireless_info *winfo;
