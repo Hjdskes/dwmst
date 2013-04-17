@@ -6,6 +6,7 @@
 #include <X11/Xlib.h>
 #include <iwlib.h>
 #include <alsa/asoundlib.h>
+#include <canberra.h>
 #ifdef CLK
 #include <time.h>
 #endif
@@ -19,8 +20,8 @@
 
 #define LAN             "enp3s0"    /* Wired interface */
 #define WLAN            "wlp5s0"    /* Wireless interface */
-#define BATT_LOW_P      11          /* Below BATT_LOW percentage left on battery, the battery display turns red */
-#define BATT_LOW_T      3           /* Same as above, but now minutes instead of percentage */
+#define BAT_LOW_P       57          /* Below BATT_LOW percentage left on battery, the battery display turns red */
+#define BAT_LOW_T       3           /* Same as above, but now minutes instead of percentage */
 #define INTERVAL        1           /* Sleeps for INTERVAL seconds between updates */
 #define VOL_CH          "Master"    /* Channel to watch for volume */
 /* Files read for system info: */
@@ -62,7 +63,8 @@
 Display *dpy;
 Window root;
 FILE *infile;
-int perc, hours, minutes, seconds = -1, skfd, mute = 0, realvol = 0, netloops = 60, musicloops = 10;
+ca_context *sound;
+int warning, perc, hours, minutes, seconds = -1, skfd, mute = 0, oldvol = -1, realvol = 0, netloops = 60, musicloops = 10;
 long now = -1, full = -1, voltage = -1, rate = -1, vol = 0, max = 0, min = 0;
 char state[8], statnext[100], status[200], netstring[30], musicstring[100];
 struct wireless_info *winfo;

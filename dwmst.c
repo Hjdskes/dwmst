@@ -8,6 +8,7 @@ int main() {
 	}
 	root = XRootWindow(dpy, DefaultScreen(dpy));
 	winfo = (struct wireless_info *) calloc(1, sizeof(struct wireless_info));
+	ca_context_create(&sound);
 #ifdef CLK
 	setlocale(LC_ALL, "");
 #endif
@@ -128,6 +129,9 @@ int main() {
 		else {
 			realvol = (vol * 100) / max;
 			sprintf(statnext, VOL_STR, realvol);
+			if(oldvol > 0 && oldvol != realvol)
+				ca_context_play(sound, 0, CA_PROP_APPLICATION_NAME, "Dwmst", CA_PROP_EVENT_ID, "audio-volume-change", CA_PROP_CANBERRA_CACHE_CONTROL, "never", NULL);
+			oldvol = realvol;
 		}
 		if(vol_info)
 			snd_mixer_selem_id_free(vol_info);
@@ -162,16 +166,23 @@ int main() {
 			minutes = seconds / 60;
 			seconds -= 60 * minutes;
 			sprintf(statnext, BAT_CHRG_STR, perc, hours, minutes);
+			warning = 0;
 		} else {
 			seconds = 3600 * ((float)now / (float)rate);
 			hours = seconds / 3600;
 			seconds -= 3600 * hours;
 			minutes = seconds / 60;
 			seconds -= 60 * minutes;
-			if (perc <  BATT_LOW_P || minutes < BATT_LOW_T)
+			if (perc < BAT_LOW_P || minutes < BAT_LOW_T) {
 				sprintf(statnext, BAT_LOW_STR, perc, hours, minutes);
-			else
+				if(!warning) {
+					ca_context_play(sound, 0, CA_PROP_APPLICATION_NAME, "Dwmst", CA_PROP_EVENT_ID, "suspend-error", CA_PROP_CANBERRA_CACHE_CONTROL, "never", NULL);
+					warning = 1;
+				}
+			} else {
 				sprintf(statnext, BAT_STR, perc, hours, minutes);
+				warning = 0;
+			}
 		}
 		hours = minutes = seconds = 0;
 		strcat(status, statnext);
@@ -187,5 +198,6 @@ int main() {
 	}
 /* NEXT LINES SHOULD NEVER EXECUTE, only here to satisfy Trilby's O.C.D. ;) */
 	XCloseDisplay(dpy);
+	ca_context_destroy(sound);
 	return 0;
 }

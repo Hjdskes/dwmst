@@ -12,7 +12,7 @@ AUDFLAG  =  -DAUD
 # Clock, comment if you don't want it
 #CLKFLAG  =  -DCLK
 
-LIBS     =  -liw -lasound -lX11 ${MPDLIB} ${AUDLIB}
+LIBS     =  -liw -lasound -lX11 -lcanberra ${MPDLIB} ${AUDLIB}
 CPPFLAGS =  ${MPDFLAG} ${AUDFLAG} ${CLKFLAG}
 CFLAGS   =  -Os -Wall -Wextra -pedantic -Wno-format-zero-length -Wno-unused-parameter -Wno-unused-result ${CPPFLAGS}
 
