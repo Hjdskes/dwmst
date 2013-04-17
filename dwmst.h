@@ -20,7 +20,7 @@
 
 #define LAN             "enp3s0"    /* Wired interface */
 #define WLAN            "wlp5s0"    /* Wireless interface */
-#define BAT_LOW_P       57          /* Below BATT_LOW percentage left on battery, the battery display turns red */
+#define BAT_LOW_P       11          /* Below BATT_LOW percentage left on battery, the battery display turns red */
 #define BAT_LOW_T       3           /* Same as above, but now minutes instead of percentage */
 #define INTERVAL        1           /* Sleeps for INTERVAL seconds between updates */
 #define VOL_CH          "Master"    /* Channel to watch for volume */
