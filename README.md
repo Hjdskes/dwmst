@@ -31,3 +31,6 @@ ToDo
 ----
 * See if there's a better way to implement wired connection checks
 * Re-check event sounds
+* Code left to clean up:
+	* MPD;
+	* Alsa;	
