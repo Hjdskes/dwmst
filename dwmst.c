@@ -12,7 +12,6 @@ int main() {
 	conn = mpd_connection_new(NULL, 0, 30000);
 #endif
 #ifdef AUD
-	g_type_init();
 	connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
 	session = dbus_g_proxy_new_for_name(connection, AUDACIOUS_DBUS_SERVICE, AUDACIOUS_DBUS_PATH, AUDACIOUS_DBUS_INTERFACE);
 #endif
@@ -117,7 +116,7 @@ int main() {
 		snd_mixer_selem_id_set_name(mute_info, VOL_CH);
 		pcm_mixer = snd_mixer_find_selem(handle, vol_info);
 		mas_mixer = snd_mixer_find_selem(handle, mute_info);
-		snd_mixer_selem_get_playback_volume_range(pcm_mixer, &min, &max);
+		snd_mixer_selem_get_playback_volume_range((snd_mixer_elem_t *)pcm_mixer, &min, &max);
 		snd_mixer_selem_get_playback_volume(pcm_mixer, SND_MIXER_SCHN_MONO, &vol);
 		snd_mixer_selem_get_playback_switch(mas_mixer, SND_MIXER_SCHN_MONO, &mute);
 		if (!mute)

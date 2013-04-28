@@ -2,7 +2,7 @@
 
 pkgname=dwmst-git
 _gitname=dwmst
-pkgver=2013.04.17
+pkgver=2013.04.18
 pkgrel=1
 pkgdesc="Hardcoded statusbar for DWM"
 arch=('any')
