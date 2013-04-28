@@ -71,7 +71,8 @@ int main() {
 				} else if (audacious_remote_is_playing(session)) {
 					sprintf(musicstring, MUSIC_STR, psong);
 					free(psong);
-				}
+				} else
+					sprintf(musicstring, MUSIC_S_STR);
 			}
 		}
 		strcat(status, musicstring);
