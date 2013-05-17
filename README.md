@@ -29,8 +29,6 @@ To (re)launch dwmst after suspending your computer, you have to enable the syste
 
 ToDo
 ----
-* See if there's a better way to implement wired connection checks
-* Re-check event sounds
 * Code left to clean up:
 	* MPD;
 	* Alsa;	

@@ -1,4 +1,4 @@
-PROG      =  dwmst
+PROG      = dwmst
 CC        = gcc
 PREFIX   ?= /usr/local
 BINPREFIX = ${PREFIX}/bin
@@ -11,15 +11,15 @@ BINPREFIX = ${PREFIX}/bin
 AUDLIB	 =  `pkg-config --cflags --libs glib-2.0 dbus-glib-1 audclient`
 AUDFLAG  =  -DAUD
 
-LIBS     =  -liw -lasound -lX11 -lcanberra ${MPDLIB} ${AUDLIB}
+LIBS     =  -liw -lasound -lX11 ${MPDLIB} ${AUDLIB}
 CPPFLAGS =  ${MPDFLAG} ${AUDFLAG} ${CLKFLAG}
-CFLAGS   =  -Os -Wall -Wextra ${CPPFLAGS}
+CFLAGS   =  -Os -pedantic -Wall -Wextra -Wno-format-zero-length ${CPPFLAGS}
 
 ${PROG}: ${PROG}.c ${PROG}.h
 	@${CC} ${CFLAGS} ${LIBS} -o ${PROG} ${PROG}.c
 	@strip ${PROG}
 
-debug: CFLAGS += -O0 -g -pedantic
+debug: CFLAGS += -O0 -g
 debug: ${PROG}
 
 install:
