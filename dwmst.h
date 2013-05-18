@@ -1,5 +1,3 @@
-#define USERNAME        "jente"
-#define SKYPENAME       "jente_etnej"
 #define WIRED_DEVICE    "enp3s0"
 #define WIRELESS_DEVICE "wlp5s0"
 #define BAT_LOW_P       11
@@ -7,6 +5,7 @@
 #define INTERVAL        1
 #define VOL_CH          "Master"
 
+#define SKYPE_LOCK      "/home/jente/.Skype/jente_etnej/main.lock"
 #define BATT_NOW        "/sys/class/power_supply/BAT0/charge_now"
 #define BATT_FULL       "/sys/class/power_supply/BAT0/charge_full"
 #define BATT_STAT       "/sys/class/power_supply/BAT0/status"
@@ -26,7 +25,7 @@
 #endif
 #define SKYPE_STR       "\x02Skype"
 #define NO_SKYPE_STR    ""
-#define LAN_STR        "\x01Verbonden"
+#define LAN_STR         "\x01Verbonden"
 #define WLAN_STR        "\x01%s \x02%d%%"
 #define NO_CON_STR      "\x01Geen verbinding"
 #define VOL_STR         "\x01Volume \x02%d%%"

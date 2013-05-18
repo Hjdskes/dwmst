@@ -85,10 +85,7 @@ char *get_aud(char *buf) {
 #endif
 
 char *get_skype(char *buf) {
-	char skypefile[50];
-
-	sprintf(skypefile, "/home/%s/.Skype/%s/main.lock", USERNAME, SKYPENAME); 
-	if(access(skypefile, F_OK) == 0)
+	if(access(SKYPE_LOCK, F_OK) == 0)
 		sprintf(buf, SKYPE_STR);
 	else
 		sprintf(buf, NO_SKYPE_STR);
@@ -96,7 +93,7 @@ char *get_skype(char *buf) {
 }
 
 int is_up(char *device) {
-	char devpath[50], state[5];
+	char devpath[35], state[5];
 
 	sprintf(devpath, "/sys/class/net/%s/operstate", device);
 	infile = fopen(devpath, "r");
@@ -205,7 +202,7 @@ char *get_battery(char *buf) {
 int main(void) {
 	Display *dpy;
 	Window root;
-	char status[256], music[100], skype[9], net[30], volume[20], battery[75];
+	char status[201], music[100], skype[7], net[30], volume[14], battery[48];
 	int netloops = 60, musicloops = 10;
 
 	dpy = XOpenDisplay(NULL);
