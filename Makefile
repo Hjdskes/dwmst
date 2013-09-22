@@ -12,7 +12,7 @@ AUDLIB	 =  `pkg-config --cflags --libs glib-2.0 dbus-glib-1 audclient`
 AUDFLAG  =  -DAUD
 
 LIBS     =  -liw -lasound -lX11 ${MPDLIB} ${AUDLIB}
-CPPFLAGS =  ${MPDFLAG} ${AUDFLAG} ${CLKFLAG}
+CPPFLAGS =  ${MPDFLAG} ${AUDFLAG}
 CFLAGS   =  -Os -pedantic -Wall -Wextra -Wno-format-zero-length ${CPPFLAGS}
 
 ${PROG}: ${PROG}.c ${PROG}.h

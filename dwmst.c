@@ -127,7 +127,7 @@ char *get_net(char *buf) {
 char *get_volume(char *buf) {
 	long vol = 0, max = 0, min = 0;
 	int mute = 0, realvol = 0;
-	
+
 	snd_mixer_t *handle;
 	snd_mixer_elem_t *pcm_mixer, *mas_mixer;
 	snd_mixer_selem_id_t *vol_info, *mute_info;
@@ -202,7 +202,7 @@ char *get_battery(char *buf) {
 int main(void) {
 	Display *dpy;
 	Window root;
-	char status[201], music[100], skype[7], net[30], volume[14], battery[48];
+	char status[201], music[100], skype[7], net[30], volume[14], battery[35];
 	int netloops = 60, musicloops = 10;
 
 	dpy = XOpenDisplay(NULL);
@@ -244,7 +244,7 @@ int main(void) {
 		get_volume(volume);
 		get_battery(battery);
 
-		sprintf(status, "%s %s %s %s%s ", music, skype, net, volume, battery);
+		sprintf(status, "%s %s %s %s %s", music, skype, net, volume, battery);
 
 		XStoreName(dpy, root, status);
 		XFlush(dpy);
