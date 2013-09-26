@@ -32,3 +32,6 @@ ToDo
 * Code left to clean up:
 	* MPD;
 	* Alsa;	
+* Improve handling when no battery is present
+* Be more strict concerning memory use
+* Check battery code when charging concerning new laptop

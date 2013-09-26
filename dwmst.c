@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <X11/Xlib.h>
+#include <dirent.h>
 #include <iwlib.h>
 #include <alsa/asoundlib.h>
 #ifdef MPD
@@ -161,41 +162,47 @@ char *get_volume(char *buf) {
 }
 
 char *get_battery(char *buf) {
+	DIR *dir;
 	char state[8];
 	long now = -1, full = -1, voltage = -1, rate = -1;
 	int perc, hours, minutes, seconds = -1;
 
-	infile = fopen(BATT_NOW, "r"); fscanf(infile, "%ld\n", &now); fclose(infile);
-	infile = fopen(BATT_FULL, "r"); fscanf(infile, "%ld\n", &full); fclose(infile);
-	infile = fopen(BATT_STAT, "r"); fscanf(infile, "%s\n", state); fclose(infile);
-	infile = fopen(BATT_VOLT, "r"); fscanf(infile, "%ld\n", &voltage); fclose(infile);
-	infile = fopen(BATT_CNOW, "r"); fscanf(infile, "%ld\n", &rate); fclose(infile);
-	now = ((float)voltage * (float)now);
-	full = ((float)voltage * (float)full);
-	rate = ((float)voltage * (float)rate);
-	perc = (now * 100) / full;
-	if (strncmp(state, "Full", 8) == 0)
-		sprintf(buf, BAT_FULL_STR);
-	else if (strncmp(state, "Unknown", 8) == 0)
-		sprintf(buf, BAT_UNK_STR);
-	else {
-		if (strncmp(state, "Charging", 8) == 0)
-			seconds = 3600 * (((float)full - (float)now) / (float)rate);
-		else
-			seconds = 3600 * ((float)now / (float)rate);
-		hours = seconds / 3600;
-		seconds -= 3600 * hours;
-		minutes = seconds / 60;
-		seconds -= 60 * minutes;
-		if (strncmp(state, "Charging", 8) == 0)
-			sprintf(buf, BAT_CHRG_STR, perc, hours, minutes);
+	dir = opendir("/sys/class/power_supply/BAT1");
+	if (dir) {
+		infile = fopen(BATT_NOW, "r"); fscanf(infile, "%ld\n", &now); fclose(infile);
+		infile = fopen(BATT_FULL, "r"); fscanf(infile, "%ld\n", &full); fclose(infile);
+		infile = fopen(BATT_STAT, "r"); fscanf(infile, "%s\n", state); fclose(infile);
+		infile = fopen(BATT_VOLT, "r"); fscanf(infile, "%ld\n", &voltage); fclose(infile);
+		infile = fopen(BATT_CNOW, "r"); fscanf(infile, "%ld\n", &rate); fclose(infile);
+		now = ((float)voltage * (float)now);
+		full = ((float)voltage * (float)full);
+		rate = ((float)voltage * (float)rate);
+		perc = (now * 100) / full;
+		if (strncmp(state, "Full", 8) == 0)
+			sprintf(buf, BAT_FULL_STR);
+		else if (strncmp(state, "Unknown", 8) == 0)
+			sprintf(buf, BAT_UNK_STR);
 		else {
-			if (perc < BAT_LOW_P || minutes < BAT_LOW_T)
-				sprintf(buf, BAT_LOW_STR, perc, hours, minutes);
+			if (strncmp(state, "Charging", 8) == 0)
+				seconds = 3600 * (((float)full - (float)now) / (float)rate);
 			else
-				sprintf(buf, BAT_STR, perc, hours, minutes);
+				seconds = 3600 * ((float)now / (float)rate);
+			hours = seconds / 3600;
+			seconds -= 3600 * hours;
+			minutes = seconds / 60;
+			seconds -= 60 * minutes;
+			if (strncmp(state, "Charging", 8) == 0)
+				sprintf(buf, BAT_CHRG_STR, perc, hours, minutes);
+			else {
+				if (perc < BAT_LOW_P || minutes < BAT_LOW_T)
+					sprintf(buf, BAT_LOW_STR, perc, hours, minutes);
+				else
+					sprintf(buf, BAT_STR, perc, hours, minutes);
+			}
 		}
-	}
+	} else
+		sprintf(buf, NO_BAT_STR);
+
 	return buf;
 }
 

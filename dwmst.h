@@ -35,3 +35,4 @@
 #define BAT_LOW_STR     "Batterij D%d%%, %02d:%02d"
 #define BAT_CHRG_STR    "Batterij C%d%%, %02d:%02d"
 #define BAT_UNK_STR     "Batterij U"
+#define NO_BAT_STR      "Geen batterij"
