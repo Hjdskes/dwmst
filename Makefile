@@ -24,11 +24,11 @@ debug: ${PROG}
 
 install:
 	install -Dm755 ${PROG} ${DESTDIR}${BINPREFIX}/${PROG}
-	install -Dm644 ${PROG}.service ${DESTDIR}/usr/lib/systemd/system/${PROG}.service
+	install -Dm644 ${PROG}@.service ${DESTDIR}/usr/lib/systemd/system/${PROG}@.service
 
 uninstall:
 	rm -f ${BINPREFIX}/${PROG}
-	rm -f /usr/lib/systemd/system/${PROG}.service
+	rm -f /usr/lib/systemd/system/${PROG}@.service
 
 clean:
 	rm -f ${PROG}
