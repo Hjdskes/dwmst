@@ -25,7 +25,7 @@ To built and install, simply run
 	# make clean install
 
 To (re)launch dwmst after suspending your computer, you have to enable the systemd service file:
-`systemctl enable dwmst.service`
+`systemctl enable dwmst@<yourusername>.service`
 
 ToDo
 ----
