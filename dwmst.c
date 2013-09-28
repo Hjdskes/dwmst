@@ -19,6 +19,9 @@
 FILE *infile;
 int skfd;
 struct wireless_info *winfo;
+#ifdef MPD
+struct mpd_connection *conn = NULL;
+#endif
 #ifdef AUD
 DBusGProxy *session = NULL;
 DBusGConnection *connection = NULL;
@@ -27,7 +30,6 @@ DBusGConnection *connection = NULL;
 #ifdef MPD
 char *get_mpd(char *buf) {
 	struct mpd_song *song = NULL;
-	struct mpd_connection *conn = NULL;
 	struct mpd_status *mpd_status = NULL;
 	const char *title = NULL, *artist = NULL;
 
@@ -48,8 +50,6 @@ char *get_mpd(char *buf) {
 			artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
 			sprintf(buf, MPD_STR, title, artist);
 			mpd_song_free(song);
-			free(title);
-			free(artist);
 		} else if (mpd_status_get_state(mpd_status) == MPD_STATE_PAUSE) {
 			mpd_response_next(conn);
 			song = mpd_recv_song(conn);
@@ -57,8 +57,6 @@ char *get_mpd(char *buf) {
 			artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
 			sprintf(buf, MPD_P_STR, title, artist);
 			mpd_song_free(song);
-			free(title);
-			free(artist);
 		} else if (mpd_status_get_state(mpd_status) == MPD_STATE_STOP)
 			sprintf(buf, MPD_S_STR);
 	}
