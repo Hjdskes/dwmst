@@ -12,27 +12,18 @@
 #define BATT_VOLT       "/sys/class/power_supply/BAT1/voltage_now"
 #define BATT_CNOW       "/sys/class/power_supply/BAT1/power_now"
 
-#ifdef MPD
-#define MPD_STR	        "%s - %s"
-#define MPD_P_STR       "Paused: %s - %s"
-#define MPD_S_STR       ""
-#define NO_MPD_STR      "Geen verbinding"
-#endif
-#ifdef AUD
 #define AUD_STR         "%s"
 #define AUD_P_STR       "%s"
 #define AUD_S_STR       ""
-#endif
 #define SKYPE_STR       "Skype"
 #define NO_SKYPE_STR    ""
 #define LAN_STR         "Verbonden"
-#define WLAN_STR        "%s %d%%"
+#define WLAN_STR        "%s"
 #define NO_CON_STR      "Geen verbinding"
 #define VOL_STR         "Volume %d%%"
 #define VOL_MUTE_STR    "Volume M"
 #define BAT_FULL_STR    "Batterij F"
 #define BAT_STR         "Batterij D%d%%, %02d:%02d"
-#define BAT_LOW_STR     "Batterij D%d%%, %02d:%02d"
 #define BAT_CHRG_STR    "Batterij C%d%%, %02d:%02d"
 #define BAT_UNK_STR     "Batterij U"
 #define NO_BAT_STR      "Geen batterij"

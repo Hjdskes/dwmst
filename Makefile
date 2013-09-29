@@ -3,17 +3,8 @@ CC        = gcc
 PREFIX   ?= /usr/local
 BINPREFIX = ${PREFIX}/bin
 
-# MPD, comment if you don't want it
-#MPDLIB   =  -lmpdclient
-#MPDFLAG  =  -DMPD
-
-# AUDACIOUS, comment if you don't want it
-AUDLIB	 =  `pkg-config --cflags --libs glib-2.0 dbus-glib-1 audclient`
-AUDFLAG  =  -DAUD
-
-LIBS     =  -liw -lasound -lX11 ${MPDLIB} ${AUDLIB}
-CPPFLAGS =  ${MPDFLAG} ${AUDFLAG}
-CFLAGS   =  -Os -pedantic -Wall -Wextra -Wno-format-zero-length ${CPPFLAGS}
+LIBS     =  -liw -lasound -lX11 `pkg-config --cflags --libs glib-2.0 dbus-glib-1 audclient`
+CFLAGS   =  -Os -pedantic -Wall -Wextra -Wno-format-zero-length
 
 ${PROG}: ${PROG}.c ${PROG}.h
 	@${CC} ${CFLAGS} ${LIBS} -o ${PROG} ${PROG}.c

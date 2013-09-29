@@ -6,66 +6,12 @@
 #include <dirent.h>
 #include <iwlib.h>
 #include <alsa/asoundlib.h>
-#ifdef MPD
-#include <mpd/client.h>
-#endif
-#ifdef AUD
 #include <audacious/dbus.h>
 #include <audacious/audctrl.h>
-#endif
 
 #include "dwmst.h"
 
-FILE *infile;
-int skfd;
-struct wireless_info *winfo;
-#ifdef MPD
-struct mpd_connection *conn = NULL;
-#endif
-#ifdef AUD
-DBusGProxy *session = NULL;
-DBusGConnection *connection = NULL;
-#endif
-
-#ifdef MPD
-char *get_mpd(char *buf) {
-	struct mpd_song *song = NULL;
-	struct mpd_status *mpd_status = NULL;
-	const char *title = NULL, *artist = NULL;
-
-	if (mpd_connection_get_error(conn))
-		sprintf(buf, NO_MPD_STR);
-	mpd_command_list_begin(conn, true);
-	mpd_send_status(conn);
-	mpd_send_current_song(conn);
-	mpd_command_list_end(conn);
-	mpd_status = mpd_recv_status(conn);
-	if (!mpd_status)
-		sprintf(buf, NO_MPD_STR);
-	else {
-		if (mpd_status_get_state(mpd_status) == MPD_STATE_PLAY) {
-			mpd_response_next(conn);
-			song = mpd_recv_song(conn);
-			title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
-			artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
-			sprintf(buf, MPD_STR, title, artist);
-			mpd_song_free(song);
-		} else if (mpd_status_get_state(mpd_status) == MPD_STATE_PAUSE) {
-			mpd_response_next(conn);
-			song = mpd_recv_song(conn);
-			title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
-			artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
-			sprintf(buf, MPD_P_STR, title, artist);
-			mpd_song_free(song);
-		} else if (mpd_status_get_state(mpd_status) == MPD_STATE_STOP)
-			sprintf(buf, MPD_S_STR);
-	}
-	mpd_response_finish(conn);
-	return buf;
-}
-#endif
-#ifdef AUD
-char *get_aud(char *buf) {
+char *get_aud(char *buf, DBusGProxy *session) {
 	char *psong = NULL;
 
 	psong = audacious_remote_get_playlist_title(session, audacious_remote_get_playlist_pos(session));
@@ -81,7 +27,6 @@ char *get_aud(char *buf) {
 			sprintf(buf, AUD_S_STR);
 	return buf;
 }
-#endif
 
 char *get_skype(char *buf) {
 	if(access(SKYPE_LOCK, F_OK) == 0)
@@ -93,6 +38,7 @@ char *get_skype(char *buf) {
 
 int is_up(char *device) {
 	char devpath[35], state[5];
+	FILE *infile;
 
 	sprintf(devpath, "/sys/class/net/%s/operstate", device);
 	infile = fopen(devpath, "r");
@@ -105,17 +51,13 @@ int is_up(char *device) {
 	return 0;
 }
 
-char *get_net(char *buf) {
+char *get_net(char *buf, int skfd, wireless_info *winfo) {
 	if (is_up(WIRED_DEVICE))
 		sprintf(buf, LAN_STR);
 	else if (is_up(WIRELESS_DEVICE)) {
 		if (iw_get_basic_config(skfd, WIRELESS_DEVICE, &(winfo->b)) > -1) {
-			if (iw_get_stats(skfd, WIRELESS_DEVICE, &(winfo->stats), &winfo->range, winfo->has_range) >= 0)
-				winfo->has_stats = 1;
-			if (iw_get_range_info(skfd, WIRELESS_DEVICE, &(winfo->range)) >= 0)
-				winfo->has_range = 1;
 			if (winfo->b.has_essid && winfo->b.essid_on) {
-					sprintf(buf, WLAN_STR, winfo->b.essid, (winfo->stats.qual.qual * 100) / winfo->range.max_qual.qual);
+					sprintf(buf, WLAN_STR, winfo->b.essid);
 			}
 		}
 	} else
@@ -161,6 +103,7 @@ char *get_volume(char *buf) {
 
 char *get_battery(char *buf) {
 	DIR *dir;
+	FILE *infile;
 	char state[8];
 	long now = -1, full = -1, voltage = -1, rate = -1;
 	int perc, hours, minutes, seconds = -1;
@@ -193,9 +136,8 @@ char *get_battery(char *buf) {
 				sprintf(buf, BAT_CHRG_STR, perc, hours, minutes);
 			else {
 				if (perc < BAT_LOW_P || minutes < BAT_LOW_T)
-					sprintf(buf, BAT_LOW_STR, perc, hours, minutes);
-				else
-					sprintf(buf, BAT_STR, perc, hours, minutes);
+					/*notify*/
+				sprintf(buf, BAT_STR, perc, hours, minutes);
 			}
 		}
 	} else
@@ -209,6 +151,10 @@ int main(void) {
 	Window root;
 	char status[201], music[100], skype[7], net[30], volume[14], battery[35];
 	int netloops = 60, musicloops = 10;
+	int skfd;
+	struct wireless_info *winfo;
+	DBusGProxy *session = NULL;
+	DBusGConnection *connection = NULL;
 
 	dpy = XOpenDisplay(NULL);
 	if (dpy == NULL) {
@@ -218,33 +164,20 @@ int main(void) {
 	root = XRootWindow(dpy, DefaultScreen(dpy));
 	winfo = malloc(sizeof(struct wireless_info));
 	memset(winfo, 0, sizeof(struct wireless_info));
-
-#ifdef MPD
-	conn = mpd_connection_new(NULL, 0, 30000);
-#endif
-#ifdef AUD
-	connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	session = dbus_g_proxy_new_for_name(connection, AUDACIOUS_DBUS_SERVICE, AUDACIOUS_DBUS_PATH, AUDACIOUS_DBUS_INTERFACE);
-#endif
 	skfd = iw_sockets_open();
 
+	connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+	session = dbus_g_proxy_new_for_name(connection, AUDACIOUS_DBUS_SERVICE, AUDACIOUS_DBUS_PATH, AUDACIOUS_DBUS_INTERFACE);
+
 	while(1) {
-#ifdef MPD
 		if (++musicloops > 10) {
 			musicloops = 0;
-			get_mpd(music);
+			get_aud(music, session);
 		}
-#endif
-#ifdef AUD
-		if (++musicloops > 10) {
-			musicloops = 0;
-			get_aud(music);
-		}
-#endif
 		get_skype(skype);
 		if (++netloops > 60) {
 			netloops = 0;
-			get_net(net);
+			get_net(net, skfd, winfo);
 		}
 		get_volume(volume);
 		get_battery(battery);
@@ -258,10 +191,7 @@ int main(void) {
 
 	/* NEXT LINES SHOULD NEVER EXECUTE, only here to satisfy Trilby's O.C.D. ;) */
 	XCloseDisplay(dpy);
-#ifdef MPD
-	mpd_connection_free(conn);
-#endif
-#ifdef AUD
+
 	dbus_g_connection_unref(connection);
 	g_object_unref(session);
 #endif
