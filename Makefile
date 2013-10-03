@@ -4,7 +4,7 @@ PREFIX   ?= /usr/local
 BINPREFIX = ${PREFIX}/bin
 
 LIBS     =  -liw -lasound -lX11 `pkg-config --cflags --libs glib-2.0 dbus-glib-1 audclient`
-CFLAGS   =  -Os -pedantic -Wall -Wextra -Wno-format-zero-length
+CFLAGS   =  -O3 -pedantic -Wall -Wextra -Wno-format-zero-length
 
 ${PROG}: ${PROG}.c ${PROG}.h
 	@${CC} ${CFLAGS} ${LIBS} -o ${PROG} ${PROG}.c
