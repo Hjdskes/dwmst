@@ -6,7 +6,7 @@ After=suspend.target
 User=%I
 Type=simple
 Environment=DISPLAY=:0
-ExecStart=/usr/bin/dwmst
+ExecStart=/usr/bin/sleep 3s && /usr/bin/dwmst
 
 [Install]
 WantedBy=suspend.target
