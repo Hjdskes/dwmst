@@ -3,8 +3,8 @@ CC        = gcc
 PREFIX   ?= /usr/local
 BINPREFIX = ${PREFIX}/bin
 
-LIBS     =  -liw -lasound -lX11 `pkg-config --cflags --libs glib-2.0 dbus-glib-1 audclient`
-CFLAGS   +=  -Os -pedantic -Wall -Wextra -Wno-format-zero-length
+LIBS      =  -liw -lasound -lX11 `pkg-config --cflags --libs glib-2.0 dbus-glib-1 audclient`
+CFLAGS   += -pedantic -Wall -Wextra -Wno-format-zero-length
 
 debug: CFLAGS += -O0 -g
 debug: ${PROG}
