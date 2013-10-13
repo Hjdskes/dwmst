@@ -119,7 +119,7 @@ char *get_battery (char *buf) {
 			else {
 				/*if (perc < BAT_LOW_P || minutes < BAT_LOW_T)*/
 					/*notify*/
-				snprintf (buf, 24, BAT_STR, perc, hours, minutes);
+				snprintf (buf, 35, BAT_STR, perc, hours, minutes);
 			}
 		}
 	} else
@@ -131,7 +131,7 @@ char *get_battery (char *buf) {
 int main(void) {
 	Display *dpy;
 	Window root;
-	char status[256], music[184], skype[6], net[30], volume[12], battery[24];
+	char status[256], music[173], skype[6], net[30], volume[12], battery[35];
 	int netloops = 60, musicloops = 10;
 	DBusGProxy *session = NULL;
 	DBusGConnection *connection = NULL;
