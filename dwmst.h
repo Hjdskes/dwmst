@@ -13,8 +13,7 @@
 #define BATT_CNOW       "/sys/class/power_supply/BAT1/power_now"
 
 #define AUD_STR         "%s"
-#define AUD_P_STR       "%s"
-#define AUD_S_STR       ""
+#define NO_AUD_STR      ""
 #define SKYPE_STR       "Skype"
 #define NO_SKYPE_STR    ""
 #define LAN_STR         "Verbonden"
