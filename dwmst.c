@@ -15,7 +15,7 @@ char *get_aud (char *buf, DBusGProxy *session) {
 
 	psong = audacious_remote_get_playlist_title (session, audacious_remote_get_playlist_pos (session));
 	if (psong) {
-		snprintf (buf, 184, AUD_STR, psong);
+		snprintf (buf, 173, AUD_STR, psong);
 		free (psong);
 	} else
 		snprintf (buf, 1, NO_AUD_STR);
