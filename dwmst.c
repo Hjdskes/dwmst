@@ -15,10 +15,10 @@ char *get_aud (char *buf, DBusGProxy *session) {
 
 	psong = audacious_remote_get_playlist_title (session, audacious_remote_get_playlist_pos (session));
 	if (psong) {
-		snprintf (buf, 173, AUD_STR, psong);
+		snprintf (buf, 160, AUD_STR, psong);
 		free (psong);
 	} else
-		snprintf (buf, 1, NO_AUD_STR);
+		buf[0] = '\0';
 	return buf;
 }
 
@@ -26,7 +26,7 @@ char *get_skype (char *buf) {
 	if (access (SKYPE_LOCK, F_OK) == 0)
 		snprintf (buf, 6, SKYPE_STR);
 	else
-		snprintf (buf, 1, NO_SKYPE_STR);
+		buf[0] = '\0';
 	return buf;
 }
 
@@ -86,7 +86,7 @@ char *get_volume (char *buf, snd_mixer_t *handle) {
 
 char *get_battery (char *buf) {
 	FILE *infile;
-	char state[8];
+	char state[11];
 	long now = -1, full = -1, voltage = -1, rate = -1;
 	int perc, hours, minutes, seconds = -1;
 
@@ -117,9 +117,9 @@ char *get_battery (char *buf) {
 			if (strncmp (state, "Charging", 8) == 0)
 				snprintf (buf, 24, BAT_CHRG_STR, perc, hours, minutes);
 			else {
-				/*if (perc < BAT_LOW_P || minutes < BAT_LOW_T)*/
-					/*notify*/
-				snprintf (buf, 35, BAT_STR, perc, hours, minutes);
+				/*if (perc < BAT_LOW_P || minutes < BAT_LOW_T)
+					notify*/
+				snprintf (buf, 24, BAT_STR, perc, hours, minutes);
 			}
 		}
 	} else
@@ -131,7 +131,7 @@ char *get_battery (char *buf) {
 int main(void) {
 	Display *dpy;
 	Window root;
-	char status[256], music[173], skype[6], net[30], volume[12], battery[35];
+	char status[256], music[160], skype[6], net[30], volume[12], battery[24];
 	int netloops = 60, musicloops = 10;
 	DBusGProxy *session = NULL;
 	DBusGConnection *connection = NULL;

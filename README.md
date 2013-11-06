@@ -27,5 +27,4 @@ ToDo
 * Code left to clean up:
 	* Alsa;	
 * Improve handling when no battery is present
-* Be more strict concerning memory use
-* Check battery code when charging concerning new laptop
+* Look into empty spaces when Skype/Network is not present
