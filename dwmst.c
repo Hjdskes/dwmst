@@ -53,7 +53,7 @@ char *get_net (char *buf, int skfd, wireless_info *winfo) {
 	else if (is_up (WIRED_DEVICE))
 		snprintf (buf, 10, LAN_STR);
 	else
-		snprintf (buf, 1, NO_CON_STR);
+		snprintf (buf, 15, NO_CON_STR);
 	return buf;
 }
 
