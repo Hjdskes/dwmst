@@ -10,7 +10,6 @@ Installation
 
 In order to succesfully compile this, you need to have the following dependencies installed:
 * `libx11`
-* `wireless_tools`
 * `alsa-lib`
 * `audacious`
 

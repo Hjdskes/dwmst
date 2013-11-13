@@ -1,9 +1,7 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
 #include <X11/Xlib.h>
-#include <iwlib.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <linux/wireless.h>
 #include <alsa/asoundlib.h>
 #include <audacious/dbus.h>
 #include <audacious/audctrl.h>
@@ -43,17 +41,18 @@ int is_up (char *device) {
 	return 0;
 }
 
-char *get_net (char *buf, int skfd, wireless_info *winfo) {
+char *get_net (char *buf, struct iwreq wreq, int socket) {
+	char ssid[30] = "";
+
 	if (is_up (WIRELESS_DEVICE)) {
-		if (iw_get_basic_config (skfd, WIRELESS_DEVICE, &(winfo->b)) > -1) {
-			if (winfo->b.has_essid && winfo->b.essid_on)
-					snprintf (buf, 30, WLAN_STR, winfo->b.essid);
-		}
-	}
-	else if (is_up (WIRED_DEVICE))
+		wreq.u.essid.pointer = ssid;
+		wreq.u.essid.length = sizeof (ssid);
+		ioctl (socket, SIOCGIWESSID, &wreq);
+		snprintf (buf, 30, WLAN_STR, ssid);
+	} else if (is_up (WIRED_DEVICE))
 		snprintf (buf, 10, LAN_STR);
 	else
-		snprintf (buf, 15, NO_CON_STR);
+		snprintf (buf, 16, NO_CON_STR);
 	return buf;
 }
 
@@ -135,39 +134,37 @@ int main(void) {
 	int netloops = 60, musicloops = 10;
 	DBusGProxy *session = NULL;
 	DBusGConnection *connection = NULL;
-	int skfd;
-	struct wireless_info *winfo;
+	int sockfd;
+	struct iwreq wreq;
 	snd_mixer_t *handle;
 
-	dpy = XOpenDisplay (NULL);
-	if (dpy == NULL) {
-		fprintf(stderr, "ERROR: could not open display\n");
+	if (!(dpy = XOpenDisplay (NULL))) {
+		fprintf (stderr, "Error: could not open display.\n");
 		return 1;
 	}
-
 	root = XRootWindow (dpy, DefaultScreen (dpy));
 
 	connection = dbus_g_bus_get (DBUS_BUS_SESSION, NULL);
 	session = dbus_g_proxy_new_for_name (connection, AUDACIOUS_DBUS_SERVICE, AUDACIOUS_DBUS_PATH, AUDACIOUS_DBUS_INTERFACE);
 
-	winfo = malloc (sizeof (struct wireless_info));
-	memset (winfo, 0, sizeof (struct wireless_info));
-	skfd = iw_sockets_open ();
+	memset (&wreq, 0, sizeof (struct iwreq));
+	snprintf (wreq.ifr_name, 7, WIRELESS_DEVICE);
+	sockfd = socket (AF_INET, SOCK_DGRAM, 0);
 
 	snd_mixer_open (&handle, 0);
 	snd_mixer_attach (handle, "default");
 	snd_mixer_selem_register (handle, NULL, NULL);
 	snd_mixer_load (handle);
 
-	while(1) {
+	while (1) {
 		if (++musicloops > 10) {
 			musicloops = 0;
 			get_aud (music, session);
 		}
-		get_skype(skype);
-		if (++netloops > 60) {
+		get_skype (skype);
+		if (++netloops > 60 && sockfd != -1) {
 			netloops = 0;
-			get_net (net, skfd, winfo);
+			get_net (net, wreq, sockfd);
 		}
 		get_volume (volume, handle);
 		get_battery (battery);
@@ -182,7 +179,7 @@ int main(void) {
 	XCloseDisplay (dpy);
 	dbus_g_connection_unref (connection);
 	g_object_unref (session);
-	iw_sockets_close (skfd);
+	close (sockfd);
 	snd_mixer_close (handle);
 	return 0;
 }
