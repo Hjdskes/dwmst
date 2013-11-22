@@ -15,7 +15,7 @@ ${PROG}: ${PROG}.c ${PROG}.h
 
 install:
 	install -Dm755 ${PROG} ${DESTDIR}${BINPREFIX}/${PROG}
-	install -Dm644 ${PROG}.sh ${DESTDIR}/usr/lib/systemd/system-sleep/${PROG}.sh
+	install -Dm755 ${PROG}.sh ${DESTDIR}/usr/lib/systemd/system-sleep/${PROG}.sh
 
 uninstall:
 	rm -f ${BINPREFIX}/${PROG}
