@@ -15,11 +15,11 @@ ${PROG}: ${PROG}.c ${PROG}.h
 
 install:
 	install -Dm755 ${PROG} ${DESTDIR}${BINPREFIX}/${PROG}
-	install -Dm755 ${PROG}.sh ${DESTDIR}/usr/lib/systemd/system-sleep/${PROG}.sh
+	install -Dm644 ${PROG}@.service ${DESTDIR}/usr/lib/systemd/system/${PROG}@.service
 
 uninstall:
 	rm -f ${BINPREFIX}/${PROG}
-	rm -f /usr/lib/systemd/system-sleep/${PROG}.sh
+	rm -f /usr/lib/systemd/system/${PROG}@.service
 
 clean:
 	rm -f ${PROG}

@@ -1,0 +1,13 @@
+[Unit]
+Description=Restart dwmst after suspend
+After=suspend.target
+
+[Service]
+User=%I
+Type=simple
+Environment=DISPLAY=:0
+ExecStartPre=-/usr/bin/killall dwmst ; -/usr/bin/sleep 3
+ExecStart=/usr/bin/dwmst
+
+[Install]
+WantedBy=suspend.target
