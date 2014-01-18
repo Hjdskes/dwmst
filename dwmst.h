@@ -1,7 +1,5 @@
 #define WIRED_DEVICE    "enp9s0"
 #define WIRELESS_DEVICE "wlp3s0"
-#define BAT_LOW_P       11
-#define BAT_LOW_T       3
 #define INTERVAL        1
 #define VOL_CH          "Master"
 
