@@ -7,7 +7,7 @@
 #include <audacious/dbus.h>
 #include <audacious/audctrl.h>
 
-#include "dwmstatus.h"
+#include "dwmst.h"
 
 static Display *dpy;
 
