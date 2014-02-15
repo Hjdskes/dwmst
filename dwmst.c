@@ -151,11 +151,13 @@ get_batt(void) {
 	if(strncmp(state, "Charging", 8) == 0) {
 		minutes = 60 * ((full - now) / rate);
 		hours = minutes / 60;
+		if(hours > 24) hours = 24;
 		minutes -= 60 * hours;
 		return smprintf(BAT_CHRG_STR, perc, hours, minutes);
 	} else {
 		minutes = 60 * (now / rate);
 		hours = minutes / 60;
+		if(hours > 24) hours = 24;
 		minutes -= 60 * hours;
 		/*notify*/
 		return smprintf(BAT_DIS_STR, perc, hours, minutes);
