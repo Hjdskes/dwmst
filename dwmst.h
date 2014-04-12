@@ -28,3 +28,5 @@
 #define BAT_CHRG_STR    "C %d%%, %02d:%02d"
 #define BAT_UNK_STR     "U"
 #define NO_BAT_STR      "N"
+
+#define CLK_STR         "%a %d %b, %R"

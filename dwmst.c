@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <time.h>
 #include <X11/Xlib.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -164,6 +165,20 @@ get_batt(void) {
 	}
 }
 
+char *
+get_time(void) {
+	char clock[38];
+	time_t current;
+
+	memset(clock, 0, sizeof(clock));
+	time(&current);
+
+	if(!strftime(clock, sizeof(clock) - 1, CLK_STR, localtime(&current)))
+		return smprintf("%s", "strftime == 0");
+
+	return smprintf("%s", clock);
+}
+
 void
 setstatus(char *str) {
 	XStoreName(dpy, DefaultRootWindow(dpy), str);
@@ -177,7 +192,7 @@ main(void) {
 	DBusGProxy *session = NULL;
 	DBusGConnection *conn = NULL;
 	int sockfd, netloops = 60, musicloops = 60;
-	char *status, *aud, *skype, *net, *vol, *batt;
+	char *status, *aud, *skype, *net, *vol, *batt, *clk;
 
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "dwmst: cannot open display.\n");
@@ -204,7 +219,8 @@ main(void) {
 			net = get_net(wreq, sockfd);
 		vol = get_vol(handle);
 		batt = get_batt();
-		status = smprintf("%s      %s      %s      %s      %s", aud, skype, net, vol, batt);
+		clk = get_time();
+		status = smprintf("%s      %s      %s      %s      %s      %s", aud, skype, net, vol, batt, clk);
 		setstatus(status);
 		if(++musicloops > 60 && session != NULL)
 			free(aud);
