@@ -3,7 +3,7 @@ CC        = gcc
 PREFIX   ?= /usr/local
 BINPREFIX = ${PREFIX}/bin
 
-LIBS      = -lasound -lX11 `pkg-config --cflags --libs glib-2.0 dbus-glib-1 audclient`
+LIBS      = -lasound -lX11
 CFLAGS   += -std=c99 -pedantic -Wall -Wextra
 
 debug: CFLAGS += -O0 -g

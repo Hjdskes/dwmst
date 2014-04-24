@@ -14,7 +14,6 @@ Installation
 In order to succesfully compile this, you need to have the following dependencies installed:
 * `libx11`
 * `alsa-lib`
-* `audacious`
 
 To built and install, simply run
 

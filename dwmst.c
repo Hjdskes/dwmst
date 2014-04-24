@@ -5,8 +5,6 @@
 #include <sys/socket.h>
 #include <alsa/asoundlib.h>
 #include <linux/wireless.h>
-#include <audacious/dbus.h>
-#include <audacious/audctrl.h>
 
 #include "dwmst.h"
 
@@ -49,19 +47,6 @@ is_up (char *device) {
 			return 1;
 	}
 	return 0;
-}
-
-char *
-get_aud(DBusGProxy *session) {
-	char *music = NULL;
-	int pos;
-
-	pos = audacious_remote_get_playlist_pos(session);
-	music = audacious_remote_get_playlist_title(session, pos);
-	if(music != NULL)
-		return smprintf(AUD_STR, music);
-	else
-		return NULL;
 }
 
 char *
@@ -189,22 +174,17 @@ int
 main(void) {
 	struct iwreq wreq;
 	snd_mixer_t *handle;
-	DBusGProxy *session = NULL;
-	DBusGConnection *conn = NULL;
-	int sockfd, netloops = 60, musicloops = 60;
-	char *status, *aud, *skype, *net, *vol, *batt, *clk;
+	int sockfd, loops = 60;
+	char *status, *skype, *net, *vol, *batt, *clk;
 
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "dwmst: cannot open display.\n");
 		return 1;
 	}
 
-	conn = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	session = dbus_g_proxy_new_for_name(conn, AUDACIOUS_DBUS_SERVICE, AUDACIOUS_DBUS_PATH, AUDACIOUS_DBUS_INTERFACE);
-
 	memset(&wreq, 0, sizeof(struct iwreq));
 	snprintf(wreq.ifr_name, sizeof(WIRELESS_DEVICE), WIRELESS_DEVICE);
-	sockfd = socket (AF_INET, SOCK_DGRAM, 0);
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
 	snd_mixer_open(&handle, 0);
 	snd_mixer_attach(handle, "default");
@@ -212,26 +192,27 @@ main(void) {
 	snd_mixer_load(handle);
 
 	for(;;sleep(INTERVAL)) {
-		if(++musicloops > 60 && session != NULL)
-			aud = get_aud(session);
+		if(++loops > 60) {
+			loops = 0;
+			if(sockfd > 0)
+				net = get_net(wreq, sockfd);
+			clk = get_time();
+		}
 		skype = get_skype();
-		if(++netloops > 60 && sockfd > 0)
-			net = get_net(wreq, sockfd);
 		vol = get_vol(handle);
 		batt = get_batt();
-		clk = get_time();
-		status = smprintf("%s      %s      %s      %s      %s      %s", aud, skype, net, vol, batt, clk);
+		status = smprintf("%s      %s      %s      %s      %s", skype, net, vol, batt, clk);
 		setstatus(status);
-		if(++musicloops > 60 && session != NULL)
-			free(aud);
 		free(skype);
-		if(++netloops > 60 && sockfd > 0)
-			free(net);
 		free(vol);
 		free(batt);
 		free(status);
 	}
 
+
+	if(sockfd > 0)
+		free(net);
+	free(clk);
 	XCloseDisplay(dpy);
 	close(sockfd);
 	snd_mixer_close(handle);

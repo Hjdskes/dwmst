@@ -10,8 +10,8 @@
 #define BATT_VOLT       "/sys/class/power_supply/BAT1/voltage_now"
 #define BATT_CNOW       "/sys/class/power_supply/BAT1/power_now"
 
-#define AUD_STR         "%s"
-#define NO_AUD_STR      ""
+#define MPD_STR         "%s"
+#define NO_MPD_STR      ""
 
 #define SKYPE_STR       "Skype"
 #define NO_SKYPE_STR    ""
