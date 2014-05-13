@@ -3,12 +3,11 @@
 #include <X11/Xlib.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <mpd/client.h>
 #include <alsa/asoundlib.h>
 #include <linux/wireless.h>
 
 #include "dwmst.h"
-
-static Display *dpy;
 
 char *
 smprintf(char *fmt, ...) {
@@ -21,9 +20,9 @@ smprintf(char *fmt, ...) {
 	va_end(fmtargs);
 
 	ret = malloc(++len);
-	if (ret == NULL) {
+	if(ret == NULL) {
 		perror("malloc");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	va_start(fmtargs, fmt);
@@ -34,7 +33,7 @@ smprintf(char *fmt, ...) {
 }
 
 int
-is_up (char *device) {
+is_up(char *device) {
 	char devpath[32], state[5];
 	FILE *infile;
 
@@ -50,103 +49,131 @@ is_up (char *device) {
 }
 
 char *
-get_skype(void) {
-	if(access(SKYPE_LOCK, F_OK) == 0)
-		return smprintf("%s", SKYPE_STR);
-	else
-		return NULL;
-}
+get_net(struct iwreq wreq, int sockfd) {
+	if(is_up(WIRED_DEVICE))
+		return LAN;
+	else if(is_up(WIRELESS_DEVICE) && sockfd != -1) {
+		char essid[IW_ESSID_MAX_SIZE + 1];
 
-char *
-get_net(struct iwreq wreq, int socket) {
-	if(is_up(WIRELESS_DEVICE)) {
-		char essid[30];
-
-		memset(essid, 0, sizeof(essid));
 		wreq.u.essid.pointer = essid;
 		wreq.u.essid.length = sizeof(essid);
-		ioctl(socket, SIOCGIWESSID, &wreq);
-		return smprintf(WLAN_STR, essid);
-	} else if(is_up(WIRED_DEVICE))
-		return smprintf("%s", LAN_STR);
-	else
-		return smprintf("%s", NO_CON_STR);
+		ioctl(sockfd, SIOCGIWESSID, &wreq);
+		return smprintf(essid);
+	} else
+		return NO_CON;
 }
 
 char *
-get_vol(snd_mixer_t *handle) {
+get_mpd(void) {
+	struct mpd_connection *con;
+	struct mpd_status *status;
+	struct mpd_song *song;
+	int status_type;
+	char *res;
+	const char *artist = NULL, *title = NULL;
+
+	con = mpd_connection_new(NULL, 0, 30000);
+	if(mpd_connection_get_error(con)) {
+		mpd_connection_free(con);
+		return NO_MPD;
+	}
+
+	mpd_command_list_begin(con, true);
+	mpd_send_status(con);
+	mpd_send_current_song(con);
+	mpd_command_list_end(con);
+
+	status = mpd_recv_status(con);
+	if(!status) {
+		mpd_connection_free(con);
+		return NO_MPD;
+	}
+	mpd_response_next(con);
+	song = mpd_recv_song(con);
+	title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
+	if(!title)
+		title = mpd_song_get_uri(song);
+	artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
+
+	status_type = mpd_status_get_state(status);
+	switch(status_type) {
+		case(MPD_STATE_PLAY):
+			res = smprintf(MPD, "Playing", artist, title);
+			break;
+		case(MPD_STATE_PAUSE):
+			res = smprintf(MPD, "Paused", artist, title);
+			break;
+		case(MPD_STATE_STOP):
+			res = smprintf(MPD, "Stopped", artist, title);
+			break;
+		default:
+			res = NO_MPD;
+			break;
+	}
+	mpd_song_free(song);
+	mpd_response_finish(con);
+	mpd_status_free(status);
+	mpd_connection_free(con);
+	return res;
+}
+
+char *
+get_vol(snd_mixer_t *handle, snd_mixer_elem_t *elem) {
 	int mute = 0;
-	long vol = 0, max = 0, min = 0;
-	snd_mixer_elem_t *pcm_mixer, *max_mixer;
-	snd_mixer_selem_id_t *vol_info, *mute_info;
+	long vol, max, min;
 
-	/*ToDo: maybe move all this to main?*/
 	snd_mixer_handle_events(handle);
-	snd_mixer_selem_id_malloc(&vol_info);
-	snd_mixer_selem_id_malloc(&mute_info);
-	snd_mixer_selem_id_set_name(vol_info, VOL_CH);
-	snd_mixer_selem_id_set_name(mute_info, VOL_CH);
-	pcm_mixer = snd_mixer_find_selem(handle, vol_info);
-	max_mixer = snd_mixer_find_selem(handle, mute_info);
-	snd_mixer_selem_get_playback_volume_range(pcm_mixer, &min, &max);
-	snd_mixer_selem_get_playback_volume(pcm_mixer, 0, &vol);
-	snd_mixer_selem_get_playback_switch(max_mixer, 0, &mute);
-	snd_mixer_selem_id_free(vol_info);
-	snd_mixer_selem_id_free(mute_info);
+	snd_mixer_selem_get_playback_volume_range(elem, &min, &max);
+	snd_mixer_selem_get_playback_volume(elem, 0, &vol);
+	snd_mixer_selem_get_playback_switch(elem, 0, &mute);
 
-	if(mute == 0)
-		return smprintf(VOL_MUTE_STR, (vol * 100) / max);
-	return smprintf(VOL_STR, (vol * 100) / max);
+	return smprintf(mute == 0 ? VOL_MUTE : VOL, (vol * 100) / max);
 }
 
 char *
-get_batt(void) {
+get_bat(void) {
 	FILE *f;
 	char state[11];
+	float now, full, voltage, rate;
+	int perc, minutes, hours;
 
 	if(access("/sys/class/power_supply/BAT1/", F_OK) != 0)
-		return smprintf("%s", NO_BAT_STR);
+		return NO_BAT;
 
-	memset(state, 0, sizeof(state));
-	f = fopen(BATT_STAT, "r");
-	if(f == NULL)
-		return NULL;
-	fscanf(f, "%s\n", state);
-	fclose(f);
+	f = fopen(BAT_STATE, "r"); if(f == NULL) return BAT_UNK;
+			fscanf(f, "%s", state); fclose(f);
 
-	if(strncmp(state, "Full", 4) == 0)
-		return smprintf("%s", BAT_FULL_STR);
-	else if(strncmp(state, "Unknown", 7) == 0)
-		return smprintf("%s", BAT_UNK_STR);
+	if(state[0] == 'F')
+		return BAT_FULL;
+	if(state[0] == 'U')
+		return BAT_UNK;
 
-	float now, full, voltage, rate;
-	unsigned int perc, minutes, hours;
-
-	f = fopen (BATT_NOW, "r"); if(f == NULL) return NULL; fscanf (f, "%f\n", &now); fclose (f);
-	f = fopen (BATT_FULL, "r"); if(f == NULL) return NULL; fscanf (f, "%f\n", &full); fclose (f);
-	f = fopen (BATT_VOLT, "r"); if(f == NULL) return NULL; fscanf (f, "%f\n", &voltage); fclose (f);
-	f = fopen (BATT_CNOW, "r"); if(f == NULL) return NULL; fscanf (f, "%f\n", &rate); fclose (f);
+	f = fopen(BAT_FULLL, "r"); if(f == NULL) return BAT_UNK;
+			fscanf(f, "%f", &now); fclose(f);
+	f = fopen(BAT_NOW, "r"); if(f == NULL) return BAT_UNK;
+			fscanf(f, "%f", &full); fclose(f);
+	f = fopen(BAT_VOLTAGE, "r"); if(f == NULL) return BAT_UNK;
+			fscanf(f, "%f", &voltage); fclose(f);
+	f = fopen(BAT_CURRENT, "r"); if(f == NULL) return BAT_UNK;
+			fscanf(f, "%f", &rate); fclose(f);
 
 	now *= voltage;
 	full *= voltage;
 	rate *= voltage;
 	perc = (now * 100) / full;
 
-	if(perc > 100) perc = 100;
-
-	if(strncmp(state, "Charging", 8) == 0) {
+	if(state[0] == 'C') {
 		minutes = 60 * ((full - now) / rate);
 		hours = minutes / 60;
-		if(hours > 24) hours = 24;
 		minutes -= 60 * hours;
-		return smprintf(BAT_CHRG_STR, perc, hours, minutes);
+		return smprintf(BAT_CHRG, perc > 100 ? 100 : perc, hours > 24 ?
+				24 : hours, minutes);
 	} else {
 		minutes = 60 * (now / rate);
 		hours = minutes / 60;
-		if(hours > 24) hours = 24;
 		minutes -= 60 * hours;
-		/*notify*/
-		return smprintf(BAT_DIS_STR, perc, hours, minutes);
+		return smprintf(BAT_DIS, perc > 100 ? 100 : perc, hours > 24 ? 
+				24 : hours, minutes);
 	}
 }
 
@@ -155,31 +182,42 @@ get_time(void) {
 	char clock[38];
 	time_t current;
 
-	memset(clock, 0, sizeof(clock));
 	time(&current);
-
-	if(!strftime(clock, sizeof(clock) - 1, CLK_STR, localtime(&current)))
-		return smprintf("%s", "strftime == 0");
-
-	return smprintf("%s", clock);
+	if(!strftime(clock, sizeof(clock) - 1, CLK, localtime(&current)))
+		return NO_CLK;
+	return smprintf(clock);
 }
 
 void
-setstatus(char *str) {
+setstatus(Display *dpy, char *str) {
 	XStoreName(dpy, DefaultRootWindow(dpy), str);
 	XSync(dpy, False);
 }
 
+void
+cleanup(Display *dpy, int sockfd, snd_mixer_t *handle,
+		snd_mixer_selem_id_t *vol_info)
+{
+	if(sockfd != -1)
+		close(sockfd);
+	XCloseDisplay(dpy);
+	snd_mixer_selem_id_free(vol_info);
+	snd_mixer_close(handle);
+}
+
 int
 main(void) {
+	Display *dpy;
 	struct iwreq wreq;
 	snd_mixer_t *handle;
+	snd_mixer_elem_t *elem;
+	snd_mixer_selem_id_t *vol_info;
 	int sockfd, loops = 60;
-	char *status, *skype, *net, *vol, *batt, *clk;
+	char *status, *mpd, *net, *vol, *bat, *clk;
 
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "dwmst: cannot open display.\n");
-		return 1;
+		exit(EXIT_FAILURE);
 	}
 
 	memset(&wreq, 0, sizeof(struct iwreq));
@@ -190,31 +228,34 @@ main(void) {
 	snd_mixer_attach(handle, "default");
 	snd_mixer_selem_register(handle, NULL, NULL);
 	snd_mixer_load(handle);
+	snd_mixer_selem_id_malloc(&vol_info);
+	snd_mixer_selem_id_set_name(vol_info, VOL_CH);
+	elem = snd_mixer_find_selem(handle, vol_info);
+	if(elem == NULL) {
+		fprintf(stderr, "dwmst: can not open device.\n");
+		cleanup(dpy, sockfd, handle, vol_info);
+		exit(EXIT_FAILURE);
+	}
 
 	for(;;sleep(INTERVAL)) {
 		if(++loops > 60) {
 			loops = 0;
-			if(sockfd > 0)
-				net = get_net(wreq, sockfd);
+			mpd = get_mpd();
+			net = get_net(wreq, sockfd);
+			bat = get_bat();
 			clk = get_time();
 		}
-		skype = get_skype();
-		vol = get_vol(handle);
-		batt = get_batt();
-		status = smprintf("%s      %s      %s      %s      %s", skype, net, vol, batt, clk);
-		setstatus(status);
-		free(skype);
+		vol = get_vol(handle, elem);
+		status = smprintf("%s  %s  %s  %s  %s", mpd, net, vol, bat, clk);
+		setstatus(dpy, status);
 		free(vol);
-		free(batt);
 		free(status);
 	}
 
-
-	if(sockfd > 0)
-		free(net);
+	free(mpd);
+	free(net);
+	free(bat);
 	free(clk);
-	XCloseDisplay(dpy);
-	close(sockfd);
-	snd_mixer_close(handle);
-	return 0;
+	cleanup(dpy, sockfd, handle, vol_info);
+	exit(EXIT_SUCCESS);
 }
