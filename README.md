@@ -14,14 +14,16 @@ Installation
 In order to succesfully compile this, you need to have the following dependencies installed:
 * `libx11`
 * `alsa-lib`
+* `libmpdclient`
 
 To built and install, simply run
 
 	$ make
 	# make clean install
 
-ToDo
-----
-* Code left to clean up:
-	* Alsa;	
-* Improve handling when no battery is present
+License
+-------
+
+This project is licensed under the GNU General Public License and should be treated as such. See `COPYING` for more information.
+
+**Copyright © 2014** Jente Hidskes <hjdskes@gmail.com>
