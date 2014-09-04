@@ -152,7 +152,7 @@ get_vol(snd_mixer_t *handle, snd_mixer_elem_t *elem) {
 char *
 get_bat(void) {
 	FILE *f;
-	char state[11];
+	char state;
 	float now, full, voltage, rate;
 	int perc, minutes, hours;
 
@@ -160,11 +160,11 @@ get_bat(void) {
 		return NO_BAT;
 
 	f = fopen(BAT_STATE, "r"); if(f == NULL) return BAT_UNK;
-			fscanf(f, "%s", state); fclose(f);
+			state = (char)fgetc(f); fclose(f);
 
-	if(state[0] == 'F')
+	if(state == 'F')
 		return BAT_FULL;
-	if(state[0] == 'U')
+	if(state == 'U')
 		return BAT_UNK;
 
 	f = fopen(BAT_FULLL, "r"); if(f == NULL) return BAT_UNK;
@@ -181,7 +181,7 @@ get_bat(void) {
 	rate *= voltage;
 	perc = (now * 100) / full;
 
-	if(state[0] == 'C') {
+	if(state == 'C') {
 		minutes = 60 * ((full - now) / rate);
 		hours = minutes / 60;
 		minutes -= 60 * hours;
